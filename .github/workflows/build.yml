@@ -8,6 +8,8 @@ on:
 
 permissions:
   contents: read
+  pages: write
+  id-token: write
 
 concurrency:
   group: hugo-${{ github.ref }}
@@ -48,14 +50,17 @@ jobs:
           echo "No tracked artifacts."
 
       - name: Setup Bun
+        if: hashFiles('package.json') != ''
         uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: latest
 
       - name: Install JS dependencies
+        if: hashFiles('package.json') != ''
         run: bun install --frozen-lockfile
 
       - name: Lint CSS and JS
+        if: hashFiles('package.json') != ''
         run: bun run lint:css && bun run lint:js
 
       - name: Lint CSS token discipline
@@ -81,7 +86,7 @@ jobs:
           echo "CSS token lint OK."
 
       - name: Build theme example
-        run: hugo --source exampleSite --themesDir ../.. --theme hugo-wishingwell-theme --gc --minify --cleanDestinationDir --panicOnWarning --printPathWarnings --noBuildLock
+        run: hugo --source exampleSite --themesDir ../.. --theme hugo-wishingwell-theme --baseURL "https://wildfire2282.github.io/hugo-wishingwell-theme/" --gc --minify --cleanDestinationDir --panicOnWarning --printPathWarnings --noBuildLock
 
       - name: Check generated URLs (ASCII-only)
         shell: bash
@@ -110,3 +115,22 @@ jobs:
           css=$(stat -c%s exampleSite/public/css/main.*.css 2>/dev/null | head -n1); js=$(stat -c%s exampleSite/public/js/main.*.js 2>/dev/null | head -n1)
           if [ -n "$css" ] && [ "$css" -gt 81920 ]; then echo "::warning::CSS bundle ${css}B exceeds 80KB threshold"; fi
           if [ -n "$js" ] && [ "$js" -gt 20480 ]; then echo "::warning::JS bundle ${js}B exceeds 20KB threshold"; fi
+
+      - name: Upload Pages artifact
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@6a12885af82e82b786e00cea042ed4f6584ec121 # v4.0.1
+        with:
+          path: exampleSite/public
+
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: hugo
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac1830421a31e91466fffa51282502f4 # v4.0.5
