@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+- README 标题改为「生成式许愿井」，简介改为「一枚心愿沉入井底，在文字里泛起轻轻的涟漪。」
+- README 许可行 `MIT。` 去句号为 `MIT`；移除 `exampleSite/content/` 仅为示例内容的附注
+
+### Chore
+- 开发期文件不再发布到 GitHub（本地保留，示例内容除外）：`AGENTS.md`、`docs/`、`biome.json`、`.stylelintrc.json`、`package.json`、`bun.lock` 已加入 `.gitignore`
+
 ## [1.0.0] - 2026-08-28
 
 初始发布。
