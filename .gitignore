@@ -26,3 +26,10 @@ node_modules/
 /local-audit-*.md
 /local/
 .codegraph/
+# 开发期工具与规范 — 仅本地使用，不发布到 GitHub（示例内容除外）
+/AGENTS.md
+/docs/
+biome.json
+.stylelintrc.json
+package.json
+bun.lock
