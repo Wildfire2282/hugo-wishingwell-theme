@@ -57,4 +57,4 @@ hugo --source exampleSite --themesDir ../.. --theme hugo-wishingwell-theme --gc 
 
 ## 许可
 
-MIT。`exampleSite/content/` 仅为示例内容。
+MIT。
