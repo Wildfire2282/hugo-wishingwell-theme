@@ -118,7 +118,7 @@ jobs:
 
       - name: Upload Pages artifact
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-        uses: actions/upload-pages-artifact@6a12885af82e82b786e00cea042ed4f6584ec121 # v4.0.1
+        uses: actions/upload-pages-artifact@v3
         with:
           path: exampleSite/public
 
@@ -133,4 +133,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@d6db90164ac1830421a31e91466fffa51282502f4 # v4.0.5
+        uses: actions/deploy-pages@v4
