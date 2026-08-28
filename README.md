@@ -1,42 +1,43 @@
 # 生成式许愿井
 
-> 愿落深井，回响自来 — 给中文写作的安静 Hugo 主题。
+> 愿落深井，回响自来 — 面向中文写作的精炼 Hugo 主题。
 
-**在线看**：https://wildfire2282.github.io/hugo-wishingwell-theme/
+**演示站点**：https://wildfire2282.github.io/hugo-wishingwell-theme/
 
-单仓双用：根目录就是完整网站，也能当主题放到别的 Hugo 站里用。零前端依赖，不装打包器，靠 Hugo 自己把 CSS/JS 打包指纹。
+本项目采用单仓双形态架构，根目录即为可部署站点，`themes/hugo-wishingwell-theme` 可作为独立主题集成至任意 Hugo 站点。无第三方前端依赖，样式与脚本经由 Hugo Pipes 完成合并、压缩与指纹化处理。
 
 ---
 
-## 怎么用
+## 快速开始
 
-**要 Hugo ≥0.164**
+**环境要求**：Hugo Extended ≥ 0.164.0
 
 ```sh
 git clone https://github.com/Wildfire2282/hugo-wishingwell-theme.git
 cd hugo-wishingwell-theme
-hugo server -D   # http://localhost:1313
+hugo server -D
+# 访问 http://localhost:1313
 ```
 
-**当主题用**
+**作为主题集成**
 
 ```toml
-# 你的 hugo.toml
+# hugo.toml
 theme = "hugo-wishingwell-theme"
 ```
 
-最小配置抄 `themes/hugo-wishingwell-theme/exampleSite/hugo.toml` 就能跑。
+完整最小配置请参阅 `themes/hugo-wishingwell-theme/exampleSite/hugo.toml`。
 
-**写文章**
+**创建内容**
 
 ```sh
-hugo new content posts/my-note/index.md
+hugo new content posts/my-article/index.md
 ```
 
 ```yaml
 ---
 title: "标题"
-slug: "my-note"
+slug: "my-article"
 description: "一句话摘要"
 topics: ["学习札记"]
 tags: ["笔记"]
@@ -45,15 +46,15 @@ tags: ["笔记"]
 
 ---
 
-## 能做什么
+## 特性
 
-- 首页、文章、主题、标签、归档、搜索、关于，手机也好用
-- 目录高亮、阅读进度、相关文章、代码一键复制、明暗色
+- 涵盖首页、文章、主题、标签、归档、搜索与关于页面，具备完善的响应式适配
+- 目录高亮、阅读进度、相关推荐、代码复制与明暗色切换
 
-## 更多说明
+## 相关文档
 
-- 设计：`themes/hugo-wishingwell-theme/docs/DESIGN.md`
-- 工程：`docs/ENGINEERING.md`
+- 设计规范：`themes/hugo-wishingwell-theme/docs/DESIGN.md`
+- 工程规范：`docs/ENGINEERING.md`
 
 ## 许可
 
