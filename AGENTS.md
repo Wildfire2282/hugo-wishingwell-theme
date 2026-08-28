@@ -14,11 +14,11 @@
 
 ## 2. 三大规范索引（必读顺序）
 
-| # | 文档 | 解决什么 | 何时读 |
+|#|文档|解决什么|何时读|
 |---|---|---|---|
-| 1 | `docs/ENGINEERING.md` | **工程事实**：目录/配置/构建/CI/产物/可访问性基线/发布 | 改 `hugo.toml / .gitignore / .github / layouts/_partials/head.html / 构建命令` 前 |
-| 2 | `themes/hugo-wishingwell-theme/docs/DESIGN.md` | **视觉语言**：三原则（克制/回响/纸墨）、`primitives → semantic → components` 分层、四套字阶、动效与组件规约 | 改 `assets/css/**`、新增组件、`$sheets`、色板/间距/阴影/圆角 前 |
-| 3 | `docs/COMMENTS.md` | **注释契约**：文件头/节头/行尾格式、`hsl+wash 8%` 豁免写法、`TODO/@deprecated/HACK` 债务标记、Go Template/JS 分区规范 | 新增 `--*`、写 `CSS/JS/Template`、标债务、写 `豁免` 时 |
+|1|`docs/ENGINEERING.md`|**工程事实**：目录/配置/构建/CI/产物/可访问性基线/发布|改 `.gitignore / .github / layouts/_partials/head.html / 构建命令` 前|
+|2|`docs/DESIGN.md`|**视觉语言**：三原则（克制/回响/纸墨）、`primitives → semantic → components` 分层、四套字阶、动效与组件规约|改 `assets/css/**`、新增组件、`$sheets`、色板/间距/阴影/圆角 前|
+|3|`docs/COMMENTS.md`|**注释契约**：文件头/节头/行尾格式、`hsl+wash 8%` 豁免写法、`TODO/@deprecated/HACK` 债务标记、Go Template/JS 分区规范|新增 `--*`、写 `CSS/JS/Template`、标债务、写 `豁免` 时|
 
 > 规则演进：**改样式先改 `DESIGN.md`，改后再同步本文索引**（`DESIGN.md:3` 原文要求）。
 
@@ -54,30 +54,31 @@
 ---
 
 ```
-docs/ENGINEERING.md                          # 工程规范（双 hugo.toml 同步、CI 六步、产物隔离）
-themes/hugo-wishingwell-theme/docs/DESIGN.md # 设计语言（tokens 分层、RUI 刻度、动效、组件摘要）
+docs/ENGINEERING.md                          # 工程规范（纯主题、产物隔离、exampleSite 构建）
+docs/DESIGN.md                               # 设计语言（tokens 分层、RUI 刻度、动效、组件摘要）
 docs/COMMENTS.md                             # 注释规范（文件头/节头/豁免/债务标记/Go Template）
-hugo.toml ↔ themes/.../exampleSite/hugo.toml  # 部署 vs 分发最小集
+exampleSite/hugo.toml                        # 主题最小可用配置（站点仓复用相同关键段）
 assets/css/tokens/{primitives,semantic}.css   # 唯一刻度源（禁组件直引 --wp-*）
 layouts/_partials/head.html                   # $sheets 指纹管线（新增组件登记点）
 .github/workflows/build.yml                  # concurrency + Guard + Token lint + ASCII URL
 .github/pull_request_template.md
 ```
 
+> 站点内容与部署已分离至 `~/workspace/wishingwell-blog`（独立 git 仓，`hugo.toml` + `content/` + `static/_headers`，GitHub → Cloudflare Pages）。本仓仅保留 `exampleSite/` 作为主题预览。
+
 ---
 
 ## 7. 改动检查清单（粘贴至 PR 描述）
 
 ```md
-- [ ] 工程：双 hugo.toml 同步说明 + CI normalize diff 通过
 - [ ] 视觉：DESIGN.md 已更新（新增 --* 或动效/组件规则）
 - [ ] 注释：按 docs/COMMENTS.md 补文件头/对比度/豁免/债务标记
-- [ ] 构建：hugo --gc --minify --cleanDestinationDir --panicOnWarning --printPathWarnings 0 警告（根 + exampleSite）
+- [ ] 构建：hugo --source exampleSite --gc --minify --cleanDestinationDir --panicOnWarning --printPathWarnings 0 警告
 - [ ] 可访问性：skip-link / focus-visible / aria-current / reduced-motion 未回退
-- [ ] 产物：public/ resources/_gen/ 未入仓（git ls-files 0）
+- [ ] 产物：public/ resources/_gen/ exampleSite/public/ 未入仓（git ls-files 0）
 - [ ] RUI：spacing/type 均走刻度，hex 仅 hsl+/* #hex */，无运行时 color-mix 现调
 ```
 
 ---
 
-*本手册版本与 `docs/ENGINEERING.md` 及 `themes/.../docs/DESIGN.md` 联动，任何一处更新需同步 bump `AGENTS.md` 顶注时间戳。*
+*本手册版本与 `docs/ENGINEERING.md` 及 `docs/DESIGN.md` 联动，任何一处更新需同步 bump `AGENTS.md` 顶注时间戳。*

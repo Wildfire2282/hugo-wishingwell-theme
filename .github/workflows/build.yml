@@ -40,32 +40,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if git ls-files --error-unmatch "public/*" "resources/_gen/*" "resources/*" "themes/**/public/*" "themes/**/resources/*" "themes/**/_gen/*" ".hugo_build.lock" "themes/**/.hugo_build.lock" 2>/dev/null; then
-            echo "::error::Build artifacts must not be tracked (public/, resources/, themes/**/public, themes/**/_gen, .hugo_build.lock)"
-            git ls-files | grep -E "(^public/|resources/|themes/.*/public/|themes/.*/_gen|\.hugo_build\.lock)"
+          if git ls-files --error-unmatch "public/*" "resources/_gen/*" "resources/*" "exampleSite/public/*" "exampleSite/resources/*" "exampleSite/_gen/*" ".hugo_build.lock" "exampleSite/.hugo_build.lock" 2>/dev/null; then
+            echo "::error::Build artifacts must not be tracked (public/, resources/, exampleSite/public, exampleSite/_gen, .hugo_build.lock)"
+            git ls-files | grep -E "(^public/|resources/|exampleSite/.*/public/|exampleSite/.*/_gen|\.hugo_build\.lock)"
             exit 1
           fi
           echo "No tracked artifacts."
-
-      - name: Lint config sync (root vs exampleSite)
-        shell: bash
-        run: |
-          set -euo pipefail
-          # 除 baseURL / params.description|tagline 外，其余键必须保持一致
-          # 通过对比去除差异行后的归一化内容
-          normalize() {
-            sed -E \
-              -e 's/^baseURL = .*/baseURL = "IGNORED"/' \
-              -e 's/^\s*description = .*/  description = "IGNORED"/' \
-              -e 's/^\s*tagline = .*/  tagline = "IGNORED"/' \
-              -e 's/#.*//' \
-              -e '/^[[:space:]]*$/d' "$1" | sort
-          }
-          diff -u <(normalize hugo.toml) <(normalize themes/hugo-wishingwell-theme/exampleSite/hugo.toml) || {
-            echo "::error::hugo.toml 与 exampleSite/hugo.toml 关键配置漂移（除 baseURL/params 外应保持一致）"
-            exit 1
-          }
-          echo "Config sync OK."
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
@@ -83,41 +63,38 @@ jobs:
         run: |
           set -euo pipefail
           echo "Check: 组件禁止直用 color-mix（应沉淀至 semantic.css）"
-          if grep -R --include="*.css" -n "color-mix" themes/hugo-wishingwell-theme/assets/css/components themes/hugo-wishingwell-theme/assets/css/base -- 2>/dev/null; then
+          if grep -R --include="*.css" -n "color-mix" assets/css/components assets/css/base -- 2>/dev/null; then
             echo "::error::发现组件层直接使用 color-mix，请改为引用 semantic.css 语义 token (--border-muted/--overlay-fab 等)"
             exit 1
           fi
           echo "Check: 禁止新增硬编码 hex（primitives/semantic/syntax/print 除外）"
-          if grep -R --include="*.css" -n -E "#[0-9a-fA-F]{3,8}\b" themes/hugo-wishingwell-theme/assets/css/components themes/hugo-wishingwell-theme/assets/css/base -- 2>/dev/null | grep -v "data:image/svg" | grep -v "data-uri" | grep -v "豁免" | grep -q .; then
+          if grep -R --include="*.css" -n -E "#[0-9a-fA-F]{3,8}\b" assets/css/components assets/css/base -- 2>/dev/null | grep -v "data:image/svg" | grep -v "data-uri" | grep -v "豁免" | grep -q .; then
             echo "::error::组件层禁止硬编码 hex 颜色，请使用 hsl 语义 token"
-            grep -R --include="*.css" -n -E "#[0-9a-fA-F]{3,8}\b" themes/hugo-wishingwell-theme/assets/css/components themes/hugo-wishingwell-theme/assets/css/base -- | grep -v "data:image/svg" | grep -v "data-uri" | grep -v "豁免"
+            grep -R --include="*.css" -n -E "#[0-9a-fA-F]{3,8}\b" assets/css/components assets/css/base -- | grep -v "data:image/svg" | grep -v "data-uri" | grep -v "豁免"
             exit 1
           fi
-          if grep -R --include="*.css" -n -E "#[0-9a-fA-F]{3,8}\b" themes/hugo-wishingwell-theme/assets/css/components themes/hugo-wishingwell-theme/assets/css/base -- 2>/dev/null | grep "豁免" | grep -v "data-uri" | grep -v "wash" | grep -v "data:image/svg" | grep -q .; then
+          if grep -R --include="*.css" -n -E "#[0-9a-fA-F]{3,8}\b" assets/css/components assets/css/base -- 2>/dev/null | grep "豁免" | grep -v "data-uri" | grep -v "wash" | grep -v "data:image/svg" | grep -q .; then
             echo "::error::hex 豁免仅允许 data-uri/wash 场景，当前豁免行未含 data-uri/wash"
-            grep -R --include="*.css" -n -E "#[0-9a-fA-F]{3,8}\b" themes/hugo-wishingwell-theme/assets/css/components themes/hugo-wishingwell-theme/assets/css/base -- | grep "豁免" | grep -v "data-uri" | grep -v "wash"
+            grep -R --include="*.css" -n -E "#[0-9a-fA-F]{3,8}\b" assets/css/components assets/css/base -- | grep "豁免" | grep -v "data-uri" | grep -v "wash"
             exit 1
           fi
           echo "CSS token lint OK."
 
-      - name: Build site (root)
-        run: hugo --gc --minify --cleanDestinationDir --panicOnWarning --printPathWarnings
-
       - name: Build theme example
-        run: hugo --source themes/hugo-wishingwell-theme/exampleSite --themesDir ../.. --theme hugo-wishingwell-theme --gc --minify --panicOnWarning --noBuildLock
+        run: hugo --source exampleSite --themesDir ../.. --theme hugo-wishingwell-theme --gc --minify --cleanDestinationDir --panicOnWarning --printPathWarnings --noBuildLock
 
       - name: Check generated URLs (ASCII-only)
         shell: bash
         run: |
           set -euo pipefail
           # 任意非 ASCII 的 percent-encoding 均视为违规（%C0..%FF 起始字节，含 4 字节 %F0..%F7）
-          if grep --recursive --extended-regexp --binary-files=text '%[Cc][0-9A-Fa-f]|%[EeDd][0-9A-Fa-f]|%[Ff][0-7][0-9A-Fa-f]' public/themes 2>/dev/null || grep --recursive --extended-regexp --binary-files=text '%[Cc][0-9A-Fa-f]|%[EeDd][0-9A-Fa-f]|%[Ff][0-7][0-9A-Fa-f]' public 2>/dev/null; then
+          if grep --recursive --extended-regexp --binary-files=text '%[Cc][0-9A-Fa-f]|%[EeDd][0-9A-Fa-f]|%[Ff][0-7][0-9A-Fa-f]' exampleSite/public 2>/dev/null; then
             echo "::error::Found percent-encoded non-ASCII URL (violates ASCII-only contract)"
-            grep --recursive --extended-regexp --binary-files=text '%[Cc][0-9A-Fa-f]|%[EeDd][0-9A-Fa-f]|%[Ff][0-7][0-9A-Fa-f]' public || true
+            grep --recursive --extended-regexp --binary-files=text '%[Cc][0-9A-Fa-f]|%[EeDd][0-9A-Fa-f]|%[Ff][0-7][0-9A-Fa-f]' exampleSite/public || true
             exit 1
           fi
           # 兼容旧检测：%E4..%EF 为常见中文编码 + %F0..%F7 4 字节
-          if grep --recursive --extended-regexp '%E[4-9][0-9A-Fa-f]|%F[0-7][0-9A-Fa-f]' public 2>/dev/null; then
+          if grep --recursive --extended-regexp '%E[4-9][0-9A-Fa-f]|%F[0-7][0-9A-Fa-f]' exampleSite/public 2>/dev/null; then
             echo "::error::Found legacy %E* / %F* non-ASCII URL"
             exit 1
           fi
@@ -126,10 +103,10 @@ jobs:
         if: always()
         shell: bash
         run: |
-          ls -lh public/css/* 2>/dev/null | awk '{print $9, $5}' || true
-          ls -lh public/js/* 2>/dev/null | awk '{print $9, $5}' || true
-          du -sh public 2>/dev/null || true
-          # 阈值告警（软门禁）：CSS 80KB / JS 20KB，超阈仅 warning 不阻断，避免 74K/19K 过严导致正常增长即失败
-          css=$(stat -c%s public/css/main.*.css 2>/dev/null | head -n1); js=$(stat -c%s public/js/main.*.js 2>/dev/null | head -n1)
+          ls -lh exampleSite/public/css/* 2>/dev/null | awk '{print $9, $5}' || true
+          ls -lh exampleSite/public/js/* 2>/dev/null | awk '{print $9, $5}' || true
+          du -sh exampleSite/public 2>/dev/null || true
+          # 阈值告警（软门禁）：CSS 80KB / JS 20KB，超阈仅 warning 不阻断
+          css=$(stat -c%s exampleSite/public/css/main.*.css 2>/dev/null | head -n1); js=$(stat -c%s exampleSite/public/js/main.*.js 2>/dev/null | head -n1)
           if [ -n "$css" ] && [ "$css" -gt 81920 ]; then echo "::warning::CSS bundle ${css}B exceeds 80KB threshold"; fi
           if [ -n "$js" ] && [ "$js" -gt 20480 ]; then echo "::warning::JS bundle ${js}B exceeds 20KB threshold"; fi

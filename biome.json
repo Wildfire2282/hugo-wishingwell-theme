@@ -21,7 +21,7 @@
   },
   "overrides": [
     {
-      "includes": ["themes/hugo-wishingwell-theme/assets/js/**"],
+      "includes": ["assets/js/**"],
       "formatter": {
         "indentStyle": "space",
         "indentWidth": 2

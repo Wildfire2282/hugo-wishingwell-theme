@@ -1,13 +1,13 @@
 # WishingWell 工程规范
 
-> 本文档是仓库唯一的工程事实源（Single Source of Truth）。所有构建、目录、配置、样式、脚本、CI 决策以本文为准；与 `themes/hugo-wishingwell-theme/docs/DESIGN.md`（视觉语言）与 `docs/COMMENTS.md`（注释规范）共同构成 `AGENTS.md` 索引的三支柱。
+> 本文档是主题仓唯一的工程事实源（Single Source of Truth）。所有构建、目录、配置、样式、脚本、CI 决策以本文为准；与 `docs/DESIGN.md`（视觉语言）与 `docs/COMMENTS.md`（注释规范）共同构成 `AGENTS.md` 索引的三支柱。
 
 ---
 
 ## 1. 定位与边界
 
-*   **仓库形态**：单仓双身份——根为可部署站点（`https://wildfire2282.github.io/hugo-wishingwell-theme/`），`themes/hugo-wishingwell-theme/` 为可分发主题，`exampleSite/` 为主题的最小可用示例。
-*   **Hugo 基线**：`≥0.164.0`（`module.hugoVersion.min`），模板使用新目录约定 `_partials / _markup`，`theme = "hugo-wishingwell-theme"`（非 `modules.imports`，保持零门槛）。
+*   **仓库形态**：纯主题仓（`hugo-wishingwell-theme`）。可分发主题文件位于仓库根（`layouts / assets / static / archetypes / theme.toml`），`exampleSite/` 为最小可用示例。站点内容已分离至独立仓 `wishingwell-blog`（见其 `README.md` 与 `hugo.toml`），本仓不再承载可部署站点。
+*   **Hugo 基线**：`≥0.164.0`（`module.hugoVersion.min`），模板使用新目录约定 `_partials / _markup`，站点侧以 `theme = "hugo-wishingwell-theme"` 引入（`themes/hugo-wishingwell-theme` submodule）。
 *   **零第三方前端依赖**：CSS 由 Hugo Pipes 合并压缩指纹，JS 单文件 `vanilla`，不引入打包器、框架、图标库。
 
 ---
@@ -16,34 +16,32 @@
 
 ```
 .
-├── archetypes/posts.md          # 文章脚手架（中文示例话题，需改英文 slug）
-├── content/posts/*/index.md     # Page Bundle 必需；每篇 exactly one topic
-├── themes/hugo-wishingwell-theme/
-│   ├── assets/{css,js}/         # 唯一可信样式/脚本源
-│   ├── layouts/{_partials,_markup}/
-│   ├── static/favicon.svg
-│   ├── exampleSite/{content,hugo.toml,public(IGNORED)}
-│   └── docs/DESIGN.md
-├── hugo.toml                    # 部署配置（见 §3）
-├── static/_headers              # Cloudflare/_headers 示例（非主题文件，发布前按域审核）
-├── .gitattributes
+├── assets/{css,js}/               # 唯一可信样式/脚本源
+├── layouts/{_partials,_markup}/   # 模板
+├── static/favicon.svg
+├── archetypes/posts.md
+├── exampleSite/{content,hugo.toml,public(IGNORED)}
+├── docs/{DESIGN.md,ENGINEERING.md,COMMENTS.md}
+├── theme.toml
+├── package.json / biome.json / .stylelintrc.json
 └── .github/workflows/build.yml
+```
 
 **产物永不入仓**（`.gitignore`）：
 
 ```
 /public/ /resources/ /_gen/ .hugo_build.lock
 resources/_gen/
-themes/**/public/ themes/**/resources/ themes/**/_gen/ themes/**/.hugo_build.lock
+exampleSite/public/ exampleSite/resources/ exampleSite/_gen/ exampleSite/.hugo_build.lock
 ```
 
-验证：`git ls-files | grep public` 必须 0；`hugo --cleanDestinationDir` 后 `git check-ignore` 命中 `themes/**/public`。
+验证：`git ls-files | grep public` 必须 0；`hugo --source exampleSite --cleanDestinationDir` 后 `git check-ignore` 命中 `exampleSite/public`。
 
 ---
 
 ## 3. 配置规范
 
-*   **双 `hugo.toml` 同步**：根 `hugo.toml`（部署）与 `themes/.../exampleSite/hugo.toml`（分发最小集）除 `baseURL / params.description|tagline` 外必须一致。CI 以 `normalize()`（剔除三键并 `sort`）做 `diff -u` 门禁。
+*   **单配置源**：`exampleSite/hugo.toml` 为主题的最小可用参考。站点仓（`wishingwell-blog`）复用相同的关键段，但与本仓不再做 CI 双向同步校验。
 *   **关键段**（任何一处漂移即视为发布阻塞）：
     *   `taxonomies: topic="topics" tag="tags"`、`permalinks posts="/posts/:slug/"`、`outputs home=["HTML","JSON"]` + `outputFormats.JSON`（`search.json`）、`related` 三索引（`topics 100 / tags 80 / date 10`）、`markup.highlight github noClasses`、`goldmark parser autoIDType github-ascii`、`pagination pagerSize 10`、`menus.main` 四项。
 *   **`theme.toml`**：`name + version (1.0.0) + license MIT + tags/features + min_version/minVersion 0.164.0 + [author]`；`version` 每次发版必 bump，`CHANGELOG.md` 同步。
@@ -106,19 +104,16 @@ themes/**/public/ themes/**/resources/ themes/**/_gen/ themes/**/.hugo_build.loc
 
 | 命令 | 用途 |
 |---|---|
-| `hugo server -D` | 本地预览 |
-| `hugo --gc --minify --cleanDestinationDir --panicOnWarning --printPathWarnings` | 严格发布（PR 门禁同） |
-| `hugo --source themes/.../exampleSite --themesDir ../.. --theme hugo-wishingwell-theme --gc --minify --cleanDestinationDir --panicOnWarning --noBuildLock` | 主题示例校验 |
+| `hugo --source exampleSite --gc --minify --cleanDestinationDir --panicOnWarning --printPathWarnings` | 主题示例校验（本地预览 `hugo --source exampleSite server -D`） |
 
 **GitHub Actions `build.yml`**（`concurrency: hugo-${{ref}}`）：
 
 1. `Install Hugo 0.164.0`（`curl + sha256sum --check`）
 2. `Guard tracked artifacts`（`git ls-files --error-unmatch`）
-3. `Lint config sync`（双 `hugo.toml` diff）
-4. `Lint CSS token`（三检）
-5. 双 `hugo` 构建
-6. `Check ASCII URLs`（`%C/%E/%D + %E4..` 双检）
-7. `Report bundle size`（`ls -lh public/css|js | du -sh`）
+3. `Lint CSS token`（三检）
+4. `hugo --source exampleSite` 构建
+5. `Check ASCII URLs`（`%C/%E/%D + %E4..` 双检，路径 `exampleSite/public`）
+6. `Report bundle size`（`ls -lh exampleSite/public/css|js | du -sh`）
 
 产物指纹示例：`main.min.827581d4fefe7fe9967f02363841c0b706ff26458b3a0f9b54e2f63de1fd211d.css 62KB / main.min.a9a4d392...js 11KB`。
 
@@ -127,9 +122,10 @@ themes/**/public/ themes/**/resources/ themes/**/_gen/ themes/**/.hugo_build.loc
 ## 8. 可访问性与发布清单
 
 *   基线不可回退：`skip-link`、`focus-visible (2px + 3px offset)`、`aria-current="page|location"`、`role="status"`、`prefers-reduced-motion` 全局瞬时化。
-*   PR 自检：`[ ] 根与 exampleSite 构建 0 警告` `[ ] URL ASCII` `[ ] 桌面/移动` `[ ] 键盘/减少动画` `[ ] 无产物/密钥入仓`（见 `.github/pull_request_template.md`）。
-*   发版：`theme.toml:version` + `CHANGELOG.md 0.x.0` + `git tag v0.x.0` + `GitHub Release`（`LICENSE MIT` 主体，`content/` 示例另授权）。
+*   PR 自检：`[ ] exampleSite 构建 0 警告` `[ ] URL ASCII` `[ ] 桌面/移动` `[ ] 键盘/减少动画` `[ ] 无产物/密钥入仓`（见 `.github/pull_request_template.md`）。
+*   发版：`theme.toml:version` + `CHANGELOG.md 0.x.0` + `git tag v0.x.0` + `GitHub Release`（`LICENSE MIT`）。
+*   站点发布：由 `wishingwell-blog` 仓负责（`hugo.toml` + `content/` + `static/_headers`），详见该仓 `README.md` 的 Cloudflare Pages 指引。
 
 ---
 
-*本文与 `themes/hugo-wishingwell-theme/docs/DESIGN.md`（视觉）与 `docs/COMMENTS.md`（注释）互为索引，详见 `AGENTS.md`。*
+*本文与 `docs/DESIGN.md`（视觉）与 `docs/COMMENTS.md`（注释）互为索引，详见 `AGENTS.md`。*

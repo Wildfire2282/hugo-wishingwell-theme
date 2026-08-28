@@ -1,7 +1,6 @@
 # 代码注释最佳实践
 
-> 注释不是翻译代码，而是记录**意图、边界与债务**。本规范适用于本仓全部 `CSS / JS / Go Template (Hugo)` 与 `Markdown front-matter`；与 `docs/ENGINEERING.md` 及 `themes/hugo-wishingwell-theme/docs/DESIGN.md` 共同受 `AGENTS.md` 索引。
-
+> 注释不是翻译代码，而是记录**意图、边界与债务**。本规范适用于本仓全部 `CSS / JS / Go Template (Hugo)` 与 `Markdown front-matter`；与 `docs/ENGINEERING.md` 及 `docs/DESIGN.md` 共同受 `AGENTS.md` 索引。
 ---
 
 ## 1. 原则
@@ -171,4 +170,4 @@ topics: ["工程实践"]
 - [ ] 豁免行含 `豁免`/`data-uri`/`alias` 关键词（CI 白名单）
 - [ ] `TODO/FIXME/HACK` 带编号与移除条件
 
-*本规范由 `docs/ENGINEERING.md §5` 与 `themes/.../docs/DESIGN.md §3-8` 联动，修改任一需同步 `AGENTS.md` 索引。*
+*本规范由 `docs/ENGINEERING.md §5` 与 `docs/DESIGN.md §3-8` 联动，修改任一需同步 `AGENTS.md` 索引。*

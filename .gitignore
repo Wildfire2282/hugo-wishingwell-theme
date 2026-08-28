@@ -4,11 +4,10 @@
 /_gen/
 .hugo_build.lock
 resources/_gen/
-# 主题示例站点产物（新旧路径兼容，避免重命名后泄漏）
-themes/**/public/
-themes/**/resources/
-themes/**/_gen/
-themes/**/.hugo_build.lock
+exampleSite/public/
+exampleSite/resources/
+exampleSite/_gen/
+exampleSite/.hugo_build.lock
 .env
 .env.*
 !.env.example

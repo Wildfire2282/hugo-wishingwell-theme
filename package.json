@@ -6,10 +6,10 @@
   },
   "private": true,
   "scripts": {
-    "lint": "bun run lint:css && bun run lint:js && hugo --gc --minify --cleanDestinationDir --panicOnWarning --printPathWarnings",
-    "lint:css": "stylelint \"themes/hugo-wishingwell-theme/assets/css/**/*.css\"",
-    "lint:js": "biome lint themes/hugo-wishingwell-theme/assets/js/",
-    "lint:fix": "stylelint --fix \"themes/hugo-wishingwell-theme/assets/css/**/*.css\" && biome check --write themes/hugo-wishingwell-theme/assets/js/"
+    "lint": "bun run lint:css && bun run lint:js && hugo --source exampleSite --themesDir ../.. --theme hugo-wishingwell-theme --gc --minify --cleanDestinationDir --panicOnWarning --printPathWarnings --noBuildLock",
+    "lint:css": "stylelint \"assets/css/**/*.css\"",
+    "lint:js": "biome lint assets/js/",
+    "lint:fix": "stylelint --fix \"assets/css/**/*.css\" && biome check --write assets/js/"
   },
   "type": "module"
 }

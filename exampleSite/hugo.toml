@@ -1,5 +1,5 @@
 # WishingWell 主题最小可用配置
-# 注意：除 baseURL / params 外，其余段落必须与站点根 hugo.toml 保持一致。
+# 本文件为主题预览用；站点仓 wishingwell-blog 复用相同关键段（taxonomies/permalinks/outputs/related/markup/pagination/menus）
 
 baseURL = "https://example.org/"
 locale = "zh-CN"
@@ -18,7 +18,7 @@ disableKinds = ["rss"]
   description = "Wishpond Hugo 主题示例站点。"
   tagline = "愿落深井 回响自来"
   author = "Wishpond"
-  # beian = "京 ICP 备 12345678 号"  # 可选：备案号占位，与根 hugo.toml 同步
+  # beian = "京 ICP 备 12345678 号"  # 可选：备案号占位
 
 [author]
   name = "Wishpond"
