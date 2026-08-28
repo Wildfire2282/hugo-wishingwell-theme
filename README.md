@@ -4,7 +4,7 @@
 
 **演示站**：https://wildfire2282.github.io/hugo-wishingwell-theme/
 
-一口为文字而设的许愿井——投下念头，听它回响。
+一枚心愿沉入井底，在文字里泛起轻轻的涟漪。
 
 ## 环境要求
 
