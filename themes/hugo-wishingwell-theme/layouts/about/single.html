@@ -1,0 +1,13 @@
+{{ define "main" }}
+  <article class="page-shell about-page">
+    <header class="page-header">
+      {{ partial "ripple.html" (dict "variant" "list") }}
+      <p class="eyebrow">ABOUT</p>
+      <h1>{{ .Title }}</h1>
+      {{ with .Description }}<p class="page-intro">{{ . }}</p>{{ end }}
+    </header>
+    <div class="about-page__content prose">
+      {{ .Content }}
+    </div>
+  </article>
+{{ end }}

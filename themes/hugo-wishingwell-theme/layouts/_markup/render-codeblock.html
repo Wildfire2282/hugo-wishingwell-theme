@@ -1,0 +1,18 @@
+{{/* ==========================================================================
+   render-codeblock.html · _markup / 代码块渲染
+   --------------------------------------------------------------------------
+   高亮代码并提供语言标签与复制按钮；横向滚动由内层 region 承载，
+   外层 toolbar 仅作语义分组。语言由 .Type 决定，缺省为 text。
+   关联：docs/COMMENTS.md §5、assets/css/components/code.css
+   ========================================================================== */}}
+{{- $result := transform.HighlightCodeBlock . -}}
+{{- $lang := .Type | default "text" -}}
+<div class="code-block" data-lang="{{ $lang }}">
+  <div class="code-block__bar" role="toolbar" aria-label="{{ $lang }} 代码块工具栏">
+    <span class="code-block__lang" aria-hidden="true">{{ $lang }}</span>
+    <button class="code-block__copy" type="button" data-copy aria-label="复制{{ $lang }}代码">复制</button>
+  </div>
+  <div class="code-block__content" tabindex="0" role="region" aria-label="{{ $lang }} 代码，可横向滚动">
+    {{- $result.Wrapped -}}
+  </div>
+</div>

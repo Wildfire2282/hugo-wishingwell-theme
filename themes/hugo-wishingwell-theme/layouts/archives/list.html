@@ -1,0 +1,30 @@
+{{ define "main" }}
+  <div class="page-shell listing-page archive">
+    <header class="page-header">
+      {{ partial "ripple.html" (dict "variant" "archive") }}
+      <p class="eyebrow">ARCHIVE</p>
+      <h1>{{ .Title }}</h1>
+      <p class="page-intro">所有投入井中的记录，按时间沉淀于此。</p>
+    </header>
+    {{ $posts := where site.RegularPages "Section" "posts" }}
+    {{ if $posts }}
+      {{ range $posts.GroupByDate "2006" }}
+        <section class="archive-year">
+          <h2>{{ .Key }} <small>{{ len .Pages }} 篇</small></h2>
+          {{ range .Pages.GroupByDate "1月" }}
+            <div class="archive-month">
+              <h3>{{ .Key }}</h3>
+              <div>
+                {{ range .Pages }}
+                  <a href="{{ .RelPermalink }}"><time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "2日" }}</time><span>{{ .Title }}</span></a>
+                {{ end }}
+              </div>
+            </div>
+          {{ end }}
+        </section>
+      {{ end }}
+    {{ else }}
+      <p class="empty-state">井中还没有记录。</p>
+    {{ end }}
+  </div>
+{{ end }}

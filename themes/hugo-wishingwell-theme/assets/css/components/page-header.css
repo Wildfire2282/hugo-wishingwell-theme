@@ -1,0 +1,235 @@
+/* ==========================================================================
+   Page Header · 组件 / 列表页头与术语网格
+   --------------------------------------------------------------------------
+   使命：列表类页面共用页头（文章/主题/标签/归档/搜索/关于），大号隶书
+   标题叠加涟漪装饰图，延续「井」空间叙事；下方衔接术语网格或文章列表。
+   禁令：禁止直引 --wp-* 原语与 color·mix；禁止硬编码色值；装饰图色
+   值若落 data-uri 需豁免，画布尺寸 440px 为叙事豁免。
+   关联：见 DESIGN.md §7 “Section label/ Page Header” 与 §7.1 移动端
+   装饰裁剪与纵向压缩；涟漪落墨动效见 utilities/motion.css ink-settle。
+   ========================================================================== */
+
+/* ---- 页头容器 · 隔离层承载涟漪图，底部以 --border-strong 收束 ---- */
+.page-header {
+  position: relative;
+  padding: var(--space-9) 0 var(--space-8);
+  overflow: hidden;
+  border-bottom: var(--border-width) solid var(--border-strong);
+  isolation: isolate;
+}
+
+.page-header > :not(.ripple-art) {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- 涟漪图 · 装饰性 SVG 线稿，色值走 currentColor/--accent ---- */
+.ripple-art {
+  position: absolute;
+  pointer-events: none;
+  color: var(--border-default);
+}
+
+.ripple-art svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.ripple-art__rings ellipse {
+  stroke: currentColor;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.ripple-art__rings ellipse:nth-child(2),
+.ripple-art__rings ellipse:nth-child(4) { stroke-dasharray: 5 9; }
+
+.ripple-art__accent {
+  stroke: var(--accent);
+  stroke-width: 1.2;
+  opacity: 0.6;
+  vector-effect: non-scaling-stroke;
+}
+
+.ripple-art__point { fill: var(--accent); }
+
+.ripple-art__glints {
+  fill: var(--accent);
+  stroke: var(--accent);
+  stroke-width: 0.8;
+  opacity: 0.48;
+  vector-effect: non-scaling-stroke;
+}
+
+.ripple-art__label {
+  fill: var(--text-faint);
+  stroke: var(--text-faint);
+  stroke-width: 0.7;
+  font: var(--text-xs) var(--font-functional);
+  letter-spacing: 0.08em;
+}
+
+.ripple-art__label text { stroke: none; }
+
+/* ---- 涟漪构图变体 · 440px 画布按页面错位旋转，入场走 ink-settle ---- */
+.page-header .ripple-art {
+  z-index: -1;
+  width: 440px; /* RUI豁免: 440px 涟漪画布，非间距 */
+  height: 440px; /* RUI豁免: 同上，叙事画布 */
+  opacity: 0.34;
+}
+
+.page-header .ripple-art__label,
+.page-header .ripple-art__point,
+.page-header .ripple-art__glints { display: none; }
+
+.page-header .ripple-art__accent { opacity: 0.34; }
+
+.page-header .ripple-art {
+  animation: ink-settle var(--dur-ink) linear both;
+}
+
+.ripple-art--list { right: -180px; top: -190px; transform: rotate(8deg); } /* RUI豁免: -180px/-190px 装饰错位，非间距 */
+
+.ripple-art--terms { right: -120px; bottom: -250px; transform: rotate(-10deg); } /* RUI豁免: 装饰错位 */
+
+.ripple-art--archive { right: 5%; top: -280px; transform: rotate(18deg); } /* RUI豁免: 5% 视口定位 */
+
+.ripple-art--search { right: -210px; bottom: -180px; transform: rotate(-18deg); } /* RUI豁免: 装饰错位 */
+
+.ripple-art--error { right: -140px; top: -160px; transform: rotate(12deg); } /* RUI豁免: 装饰错位 */
+
+/* ---- 页头文字 · 隶书 --display-page，-0.07em 收紧以显分量 ---- */
+.page-header h1 {
+  margin: 0;
+  font-size: var(--display-page);
+  letter-spacing: -0.07em;
+  line-height: var(--leading-tight);
+}
+
+.page-intro {
+  max-width: 640px; /* RUI豁免: 640px 量度，接近 --measure 720px */
+  margin: var(--space-7) 0 0;
+  color: var(--text-secondary);
+  font: var(--text-lg)/1.9 var(--font-body);
+}
+
+.page-intro p { margin: 0; }
+
+.page-count {
+  margin: var(--space-7) 0 0;
+  color: var(--text-meta);
+  font: var(--text-xs) var(--font-functional);
+}
+
+/* ---- 列表页容器 · 70vh 保底，衔接 post-list ---- */
+.listing-page {
+  min-height: 70vh;
+  padding-bottom: var(--space-10);
+}
+
+.listing-page > .post-list { margin-top: var(--space-8); }
+
+.empty-state {
+  width: 100%;
+  margin: 0;
+  padding: var(--space-10) 0;
+  color: var(--text-secondary);
+  font: var(--text-base)/1.8 var(--font-body);
+}
+
+/* ---- 术语网格 · 三栏 1fr，顶部以 --border-default 分隔 ---- */
+.term-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: var(--space-8);
+  border-top: var(--border-width) solid var(--border-default);
+  margin-top: var(--space-10);
+}
+
+.term-item {
+  position: relative;
+  min-height: var(--space-9);
+  padding: var(--space-5) 0;
+  display: flex;
+  justify-content: space-between;
+  overflow: hidden;
+  border-bottom: var(--border-width) solid var(--border-default);
+  font-size: var(--text-xl);
+}
+
+.term-item::after {
+  content: "→";
+  position: absolute;
+  right: var(--space-4);
+  bottom: calc(var(--space-6) * -1);
+  color: var(--accent-line);
+  font-size: var(--text-5xl);
+  transition: bottom var(--dur-base) var(--ease-out);
+}
+
+.term-item span { transition: color var(--dur-fast) var(--ease-out); }
+
+.term-item:hover::after,
+.term-item:focus-visible::after { bottom: calc(var(--space-3) * -1); }
+
+.term-item:hover span,
+.term-item:focus-visible span { color: var(--accent); }
+
+.term-item small {
+  color: var(--text-meta);
+  font: var(--text-xs) var(--font-functional);
+}
+
+@media (max-width: 900px) {
+  .term-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--space-6);
+  }
+}
+
+@media (max-width: 720px) {
+  .page-header { padding: var(--space-5) 0 var(--space-4); border-bottom-width: var(--border-width); }
+
+  .page-header .ripple-art { display: none; }
+
+  .page-header h1 {
+    font-size: clamp(28px, 9vw, 38px);
+    line-height: var(--leading-tight);
+    letter-spacing: -0.04em;
+    overflow-wrap: anywhere;
+  }
+
+  @supports (word-break: auto-phrase) {
+    .page-header h1 { word-break: auto-phrase; }
+  }
+
+  .page-header .eyebrow { margin-bottom: var(--space-2); font-size: var(--text-xs); }
+
+  .page-intro { margin-top: var(--space-2); font-size: var(--text-sm); line-height: var(--leading-normal); }
+
+  .page-count { margin-top: var(--space-2); font-size: var(--text-xs); }
+
+  .term-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--space-4);
+    row-gap: 0;
+    margin-top: var(--space-4);
+  }
+
+  .term-item {
+    min-height: var(--tap-min);
+    padding-block: var(--space-2);
+    font-size: var(--text-sm);
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .term-item::after { display: none; }
+
+  .term-item small { font-size: var(--text-xs); }
+
+  .listing-page > .post-list { margin-top: var(--space-4); }
+}

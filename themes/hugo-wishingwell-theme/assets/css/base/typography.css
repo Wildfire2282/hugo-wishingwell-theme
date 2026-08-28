@@ -1,0 +1,55 @@
+/* ==========================================================================
+   Typography · 基础层 / 全局排版
+   --------------------------------------------------------------------------
+   使命：定义中文长文排版不变量——正文宋体宽行高、展示隶书标题收紧与
+   眉题等宽逻辑，承载 RUI 字阶 --step 与 --font-* 映射及行高刻度；
+   禁令：禁止组件覆写字族与行高，禁止新增非 RUI 字号、禁止斜体强调；
+   关联：见 DESIGN.md §5 排版与 tokens 字阶。
+   ========================================================================== */
+
+/* 正文基线：字阶取 --step-1 流式尺寸，行高 --leading-loose 1.75 保证
+   中文宽松可读，见 DESIGN.md §5 行高与量度 --measure 720px。 */
+
+body {
+  font-size: var(--step-1);
+  line-height: var(--leading-loose);
+}
+
+/* ---- 展示标题 ---- */
+
+/* 展示标题：page-header/article/error 用 --font-title 黑体，首页 Hero 例外用 --font-functional 宋体以显仪式感 */
+.hero h1 {
+  font-family: var(--font-functional);
+  font-weight: var(--weight-bold);
+}
+
+.page-header h1,
+.article-header h1,
+.error-page h1 {
+  font-family: var(--font-title);
+  font-weight: var(--weight-bold);
+}
+
+/* ---- 眉题 ---- */
+
+/* 等宽小标签，以 --step--1/1.2 承载，0.16em 字距提供机器感；色值
+   走 --accent 点睛，--text-faint 用于装饰符号，避免新增灰阶。 */
+
+.eyebrow {
+  margin: 0 0 var(--space-6);
+  color: var(--accent);
+  font: var(--step--1)/1.2 var(--font-functional);
+  letter-spacing: 0.16em;
+}
+
+.page-header .eyebrow { margin-bottom: var(--space-8); }
+
+/* 眉题前缀 “+” 以 --space-3 12px 与文本保持一空格距，色走弱化墨；
+   12px 已对齐 RUI 12 刻度，邻比 50% 于 --space-2，见 DESIGN.md §5。 */
+
+.page-header .eyebrow::before {
+  content: "+";
+  display: inline-block;
+  margin-right: var(--space-3);
+  color: var(--text-faint);
+}

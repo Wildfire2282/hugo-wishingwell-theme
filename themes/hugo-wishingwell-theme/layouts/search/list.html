@@ -1,0 +1,18 @@
+{{ define "main" }}
+  <div class="page-shell listing-page search-page">
+    <header class="page-header">
+      {{ partial "ripple.html" (dict "variant" "search") }}
+      <p class="eyebrow">SEARCH</p>
+      <h1>{{ .Title }}</h1>
+      <p class="page-intro">从标题、摘要、主题和标签中寻找一条过去的思路。</p>
+    </header>
+    <label class="search-box">
+      <span class="sr-only">搜索文章</span>
+      <input id="search-input" type="search" maxlength="200" placeholder="输入关键词" autocomplete="off" aria-describedby="search-status" disabled>
+      <span aria-hidden="true">Ctrl/⌘ K</span>
+    </label>
+    <p class="search-status" id="search-status" role="status" aria-live="polite">正在加载搜索索引。</p>
+    <section class="search-results" id="search-results" aria-label="搜索结果"><ul></ul></section>
+    <p class="search-fallback">也可以前往<a href="{{ "archives/" | relURL }}">归档页</a>浏览全部文章。</p>
+  </div>
+{{ end }}

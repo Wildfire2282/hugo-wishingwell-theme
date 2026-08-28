@@ -1,0 +1,14 @@
+{{ $page := .page | default . }}
+{{ $level := .headingLevel | default 2 }}
+{{ $compactDate := .compactDate | default false }}
+<article class="post-row">
+  <time class="post-row__date" datetime="{{ $page.Date.Format "2006-01-02" }}">{{ if $compactDate }}{{ $page.Date.Format "1月2日" }}{{ else }}{{ $page.Date.Format "2006年1月2日" }}{{ end }}</time>
+  <div class="post-row__body">
+    {{ if eq $level 3 }}<h3><a href="{{ $page.RelPermalink }}">{{ $page.Title }}</a></h3>{{ else }}<h2><a href="{{ $page.RelPermalink }}">{{ $page.Title }}</a></h2>{{ end }}
+    {{ with $page.Description }}<p>{{ . }}</p>{{ end }}
+  </div>
+  <div class="post-row__meta">
+    {{ with index ($page.GetTerms "topics") 0 }}<a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a>{{ end }}
+    <span>{{ $page.ReadingTime }} 分钟阅读</span>
+  </div>
+</article>

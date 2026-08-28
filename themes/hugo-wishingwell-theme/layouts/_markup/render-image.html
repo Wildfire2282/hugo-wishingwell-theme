@@ -1,0 +1,41 @@
+{{/* ==========================================================================
+   render-image.html · _markup / 图片渲染
+   --------------------------------------------------------------------------
+   优先解析为 Page Resource 以注入宽高避免 CLS；含标题时包 figure，
+   缺 alt 时 warn 提示补齐。外部链接直出 safeURL。
+   关联：docs/COMMENTS.md §5、assets/css/components/prose.css
+   ========================================================================== */}}
+{{- $src := .Destination -}}
+{{- $resource := .Page.Resources.GetMatch .Destination -}}
+{{- with $resource -}}
+  {{- $src = .RelPermalink -}}
+{{- end -}}
+{{- $alt := .Text | plainify -}}
+{{/* 非空 alt：缺失时 warn，a11y 必需，避免空 alt 导致读屏丢失 */}}
+{{- if not $alt -}}
+  {{- warnf "render-image: missing alt text for %q in %q — alt 校验失败，请在 Markdown 中填写 ![alt](src)" .Destination .Page.Path -}}
+{{- end -}}
+{{- $isPriority := false -}}
+{{- with .Title }}{{ if in . "priority" }}{{ $isPriority = true }}{{ end }}{{ end }}
+{{- if .Title -}}
+<figure>
+  {{- if and $resource (ne $resource.MediaType.SubType "svg") -}}
+    {{- $small := $resource.Resize "680x" -}}
+    {{- $medium := $resource.Resize "1024x" -}}
+    <img src="{{ $src }}" alt="{{ $alt }}" width="{{ $resource.Width }}" height="{{ $resource.Height }}" loading="{{ if $isPriority }}eager{{ else }}lazy{{ end }}" decoding="async" fetchpriority="{{ if $isPriority }}high{{ else }}auto{{ end }}" srcset="{{ $small.RelPermalink }} 680w, {{ $medium.RelPermalink }} 1024w, {{ $src }} {{ $resource.Width }}w" sizes="(max-width: 720px) 100vw, 720px">
+  {{- else if $resource -}}
+    <img src="{{ $src }}" alt="{{ $alt }}" loading="{{ if $isPriority }}eager{{ else }}lazy{{ end }}" decoding="async" fetchpriority="{{ if $isPriority }}high{{ else }}auto{{ end }}">
+  {{- else -}}
+  <img src="{{ $src }}" alt="{{ $alt }}" loading="{{ if $isPriority }}eager{{ else }}lazy{{ end }}" decoding="async" fetchpriority="{{ if $isPriority }}high{{ else }}auto{{ end }}">
+  {{- end -}}
+  <figcaption>{{ .Title }}</figcaption>
+</figure>
+{{- else if and $resource (ne $resource.MediaType.SubType "svg") -}}
+  {{- $small := $resource.Resize "680x" -}}
+  {{- $medium := $resource.Resize "1024x" -}}
+<img src="{{ $src }}" alt="{{ $alt }}" width="{{ $resource.Width }}" height="{{ $resource.Height }}" loading="lazy" decoding="async" fetchpriority="auto" srcset="{{ $small.RelPermalink }} 680w, {{ $medium.RelPermalink }} 1024w, {{ $src }} {{ $resource.Width }}w" sizes="(max-width: 720px) 100vw, 720px">
+{{- else if $resource -}}
+<img src="{{ $src }}" alt="{{ $alt }}" loading="lazy" decoding="async" fetchpriority="auto">
+{{- else -}}
+<img src="{{ $src | safeURL }}" alt="{{ $alt }}" loading="lazy" decoding="async" fetchpriority="auto">
+{{- end -}}

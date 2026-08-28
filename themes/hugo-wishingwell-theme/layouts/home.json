@@ -1,0 +1,21 @@
+{{- $pages := where site.RegularPages "Section" "posts" -}}
+{{- $pages = where $pages "Draft" false -}}
+{{- $pages = where $pages "PublishDate" "le" now -}}
+{{- $pages = $pages.ByDate.Reverse -}}
+[
+{{- range $index, $page := $pages -}}
+  {{- if $index }},{{ end }}
+  {
+    "title": {{ $page.Title | jsonify }},
+    "url": {{ $page.RelPermalink | jsonify }},
+    {{/* 安全：plainify 先于 truncate，避免截断 HTML 标签；description 限 160 字符 */}}
+    "description": {{ ($page.Description | default $page.Summary | plainify | truncate 160 "") | jsonify }},
+    {{/* content 去 ellipsis，避免搜索索引尾部出现 "…" 噪声 */}}
+    "content": {{ ($page.Plain | truncate 1200 "") | jsonify }},
+    "date": {{ $page.Date.Format "2006年1月2日" | jsonify }},
+    "dateISO": {{ $page.Date.Format "2006-01-02" | jsonify }},
+    "topics": {{ $page.Params.topics | jsonify }},
+    "tags": {{ $page.Params.tags | jsonify }}
+  }
+{{- end -}}
+]

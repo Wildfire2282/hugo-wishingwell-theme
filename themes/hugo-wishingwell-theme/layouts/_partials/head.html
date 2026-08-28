@@ -1,0 +1,168 @@
+{{/* ==========================================================================
+   head.html · _partials / 文档头与资源管线
+   --------------------------------------------------------------------------
+   首帧内联设定 data-theme 避免 FOUC；
+   内联必要性：外链脚本滞后于首漆会导致闪白，内联在解析期即生效；
+   CSP script-src 的 unsafe-inline 已由 static/_headers:2 放行。
+   资源按 $sheets 显式顺序 Concat→minify→fingerprint，指纹用于
+   immutable 缓存；分页由 paginator.html 单一入口熔断。
+   关联：docs/COMMENTS.md §5、docs/DESIGN.md §3、static/_headers
+   ========================================================================== */}}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f7f7f4">
+{{/* 夜井：首帧前设定 data-theme；内联以避免 FOUC，外链会闪白；CSP unsafe-inline 已由 _headers 放行 */}}
+<script>
+  (function () {
+    var t;
+    try { t = localStorage.getItem("ww-theme"); } catch (e) {}
+    if (t !== "dark" && t !== "light") {
+      t = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    document.documentElement.setAttribute("data-theme", t);
+    var m = document.querySelector('meta[name="theme-color"]');
+    if (m) m.setAttribute("content", t === "dark" ? "#14171a" : "#f7f7f4");
+  })();
+</script>
+<link rel="icon" href="{{ "favicon.svg" | relURL }}" type="image/svg+xml">
+<link rel="sitemap" type="application/xml" title="Sitemap" href="{{ "sitemap.xml" | absURL }}">
+{{ $description := .Description | default site.Params.description }}
+{{ $isPost := and .IsPage (eq .Section "posts") }}
+{{ $pageTitle := cond .IsHome site.Title .Title }}
+{{ if eq .Kind "404" }}{{ $pageTitle = "页面未找到" }}{{ end }}
+{{ $canonical := .Permalink }}
+{{/* 分页熔断：head 先于 main 渲染，此处创建 paginator；list／term 复用 .Paginator 避免二次 Paginate */}}
+{{ $paginator := partial "paginator.html" . }}
+{{ with $paginator }}
+  {{ if gt .PageNumber 1 }}
+    {{/* 相对路径转绝对：Paginator.URL 为相对，需 absURL 与 .Permalink 统一为绝对地址以保证 canonical 一致 */}}
+    {{ $canonical = .URL | absURL }}
+    {{ $pageTitle = printf "%s · 第 %d 页" $pageTitle .PageNumber }}
+  {{ end }}
+{{ end }}
+<title>{{ if .IsHome }}{{ site.Title }}{{ else }}{{ $pageTitle }} — {{ site.Title }}{{ end }}</title>
+<meta name="description" content="{{ $description }}">
+<meta name="author" content="{{ site.Params.author | default site.Title }}">
+{{ with .Params.tags }}{{ $kw := delimit . ", " }}<meta name="keywords" content="{{ $kw }}">{{ end }}
+{{ if eq .Kind "404" }}
+  <meta name="robots" content="noindex, nofollow">
+{{ else if .Params.robots }}
+  <meta name="robots" content="{{ .Params.robots }}">
+{{ else if and (eq .Kind "taxonomy") $paginator (gt $paginator.PageNumber 1) }}
+  <meta name="robots" content="noindex, follow">
+{{ else }}
+  <link rel="canonical" href="{{ $canonical }}">
+{{ end }}
+{{ with $paginator }}
+  {{ if .HasPrev }}<link rel="prev" href="{{ .Prev.URL | absURL }}">{{ end }}
+  {{ if .HasNext }}<link rel="next" href="{{ .Next.URL | absURL }}">{{ end }}
+{{ end }}
+{{/* 开放图谱变量：按页面首图→cover→featuredImage→站点默认依次回退，供 JSON-LD 用，不输出社交 meta */}}
+{{ $ogImage := "" }}
+{{ with .Params.images }}{{ $ogImage = index . 0 }}{{ end }}
+{{ if not $ogImage }}{{ with .Params.cover }}{{ $ogImage = . }}{{ end }}{{ end }}
+{{ if not $ogImage }}{{ with .Params.featuredImage }}{{ $ogImage = . }}{{ end }}{{ end }}
+{{ if not $ogImage }}
+  {{ with site.Params.images }}{{ $ogImage = index . 0 }}{{ end }}
+{{ end }}
+{{ if not $ogImage }}
+  {{ with site.Params.cover }}{{ $ogImage = . }}{{ end }}
+{{ end }}
+{{- $sheets := slice
+  "css/tokens/primitives.css"
+  "css/tokens/semantic.css"
+  "css/base/reset.css"
+  "css/base/typography.css"
+  "css/syntax.css"
+  "css/components/header.css"
+  "css/components/hero.css"
+  "css/components/wish-drop.css"
+  "css/components/page-header.css"
+  "css/components/post-list.css"
+  "css/components/pagination.css"
+  "css/components/article.css"
+  "css/components/toc.css"
+  "css/components/prose.css"
+  "css/components/code.css"
+  "css/components/search.css"
+  "css/components/archive.css"
+  "css/components/footer.css"
+  "css/components/error.css"
+  "css/utilities/motion.css"
+  "css/utilities/print.css"
+-}}
+{{- $bundles := slice -}}
+{{- range $sheets -}}
+  {{- with resources.Get . -}}
+    {{- $bundles = $bundles | append . -}}
+  {{- else -}}
+    {{/* 缺失即告警：CI 以 --panicOnWarning 将 warn 转为失败，避免静默丢样式 */}}
+    {{- warnf "hugo-wishingwell-theme: missing css %q (not in $sheets?)" . -}}
+  {{- end -}}
+{{- end -}}
+{{- $style := $bundles | resources.Concat "css/main.css" | minify | fingerprint }}{{/* 指纹用于 immutable Cache-Control，见 static/_headers:10 */}}
+<link rel="stylesheet" href="{{ $style.RelPermalink }}" integrity="{{ $style.Data.Integrity }}" fetchpriority="high">
+{{ if ne .Kind "404" }}
+  <script type="application/ld+json">
+  {{ $authorName := site.Params.author | default site.Title }}
+  {{ $publisherName := site.Title }}
+  {{ $publisherLogo := "favicon.svg" | absURL }}
+  {{ if $isPost }}
+    {{ $keywords := delimit (.Params.tags | default slice) ", " }}
+    {{ $section := "" }}{{ with index (.GetTerms "topics") 0 }}{{ $section = .LinkTitle }}{{ end }}
+    {{ $imgForLD := "" }}{{ with $ogImage }}{{ $imgForLD = . | absURL }}{{ end }}
+    {{ $ld := dict
+      "@context" "https://schema.org"
+      "@type" "BlogPosting"
+      "name" $pageTitle
+      "headline" $pageTitle
+      "description" $description
+      "url" $canonical
+      "mainEntityOfPage" $canonical
+      "inLanguage" site.Language.Locale
+      "datePublished" (.Date.Format "2006-01-02T15:04:05Z07:00")
+      "dateModified" (.Lastmod.Format "2006-01-02T15:04:05Z07:00")
+      "author" (dict "@type" "Person" "name" $authorName "url" site.Home.Permalink)
+      "publisher" (dict "@type" "Organization" "name" $publisherName "logo" (dict "@type" "ImageObject" "url" $publisherLogo))
+      "wordCount" .WordCount
+      "keywords" $keywords
+      "articleSection" $section
+    }}
+    {{ if $imgForLD }}{{ $ld = merge $ld (dict "image" $imgForLD) }}{{ end }}
+    {{ $ld | jsonify | safeJS }}
+  {{ else if .IsHome }}
+    {{ dict
+      "@context" "https://schema.org"
+      "@type" "WebSite"
+      "name" site.Title
+      "url" site.Home.Permalink
+      "description" site.Params.description
+      "inLanguage" site.Language.Locale
+      "publisher" (dict "@type" "Organization" "name" $publisherName "logo" (dict "@type" "ImageObject" "url" $publisherLogo))
+      "potentialAction" (dict "@type" "SearchAction" "target" (printf "%s%s{search_term_string}" site.Home.Permalink "search/?q=") "query-input" "required name=search_term_string")
+    | jsonify | safeJS }}
+  {{ else }}
+    {{ dict
+      "@context" "https://schema.org"
+      "@type" "WebPage"
+      "name" $pageTitle
+      "headline" $pageTitle
+      "description" $description
+      "url" $canonical
+      "inLanguage" site.Language.Locale
+      "isPartOf" (dict "@type" "WebSite" "name" site.Title "url" site.Home.Permalink)
+    | jsonify | safeJS }}
+  {{ end }}
+  </script>
+  {{ if $isPost }}
+  <script type="application/ld+json">
+    {{ $breadcrumb := slice
+      (dict "@type" "ListItem" "position" 1 "name" "首页" "item" site.Home.Permalink)
+    }}
+    {{ with index (.GetTerms "topics") 0 }}{{ $breadcrumb = $breadcrumb | append (dict "@type" "ListItem" "position" 2 "name" .LinkTitle "item" .Permalink) }}{{ end }}
+    {{ $breadcrumb = $breadcrumb | append (dict "@type" "ListItem" "position" 3 "name" $pageTitle "item" $canonical) }}
+    {{ dict "@context" "https://schema.org" "@type" "BreadcrumbList" "itemListElement" $breadcrumb | jsonify | safeJS }}
+  </script>
+  {{ end }}
+{{ end }}

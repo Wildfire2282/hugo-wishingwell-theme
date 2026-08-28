@@ -1,0 +1,22 @@
+{{ define "main" }}
+  <div class="page-shell listing-page">
+    <header class="page-header">
+      {{ partial "ripple.html" (dict "variant" "terms") }}
+      <p class="eyebrow">{{ upper .Data.Plural }}</p>
+      <h1>{{ .Title }}</h1>
+      {{ with .Description }}<p class="page-intro">{{ . }}</p>{{ else }}<p class="page-intro">按 {{ .Data.Plural }} 浏览全部记录。</p>{{ end }}
+    </header>
+    <div class="term-grid">
+      {{ if .Data.Terms }}
+        {{ range .Data.Terms.ByCount }}
+          <a class="term-item" href="{{ .Page.RelPermalink }}">
+            <span>{{ .Page.LinkTitle }}</span>
+            <small>{{ .Count | lang.FormatNumber 0 }}</small>
+          </a>
+        {{ end }}
+      {{ else }}
+        <p class="empty-state">这里还没有分类。</p>
+      {{ end }}
+    </div>
+  </div>
+{{ end }}

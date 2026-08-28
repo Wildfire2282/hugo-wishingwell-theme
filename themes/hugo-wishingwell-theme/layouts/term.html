@@ -1,0 +1,31 @@
+{{/* ==========================================================================
+   term.html · layouts / 术语页（term）
+   --------------------------------------------------------------------------
+   展示单 term 下页面；分页熔断同 list.html，head 已创建则复用
+   .Paginator，禁止二次 Paginate。数据源为 .RegularPages。
+   关联：docs/COMMENTS.md §5、layouts/_partials/paginator.html
+   ========================================================================== */}}
+{{ define "main" }}
+  {{ $pages := .RegularPages }}
+  {{/* 分页熔断：head 先于 main 渲染，此处创建 paginator；list／term 复用 .Paginator 避免二次 Paginate */}}
+  {{ $paginator := partial "paginator.html" . }}
+  <div class="page-shell listing-page">
+    <header class="page-header">
+      {{ partial "ripple.html" (dict "variant" "list") }}
+      <p class="eyebrow">INDEX</p>
+      <h1>{{ .Title }}</h1>
+      {{ with .Content }}<div class="page-intro">{{ . }}</div>{{ end }}
+      <p class="page-count">{{ len $pages }} 篇记录</p>
+    </header>
+    <div class="post-list">
+      {{ if $pages }}
+        {{ range $paginator.Pages }}
+          {{ partial "post-row.html" (dict "page" . "headingLevel" 2) }}
+        {{ end }}
+      {{ else }}
+        <p class="empty-state">这里还没有记录。</p>
+      {{ end }}
+    </div>
+    {{ partial "pagination.html" . }}
+  </div>
+{{ end }}

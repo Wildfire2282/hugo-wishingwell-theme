@@ -1,0 +1,26 @@
+{{/* ==========================================================================
+   baseof.html · layouts / 基础骨架
+   --------------------------------------------------------------------------
+   唯一骨架：html→head→header→main→footer→script。head 已在解析期
+   创建 paginator 并注入 canonical／prev／next，下游仅复用，禁止
+   在骨架层重复 Paginate。
+   关联：docs/COMMENTS.md §5、layouts/_partials/head.html、
+   layouts/_partials/paginator.html
+   ========================================================================== */}}
+<!doctype html>
+<html class="no-js" lang="{{ site.Language.Locale }}">
+  <head>
+    {{ partial "head.html" . }}
+  </head>
+  <body data-search-index="{{ "search.json" | relURL }}">
+    <a class="skip-link" href="#main-content">跳到主要内容</a>
+    <div class="reading-progress" aria-hidden="true"></div>
+    {{ if not .IsHome }}{{ partial "header.html" . }}{{ end }}
+    <main id="main-content" tabindex="-1">
+      {{ block "main" . }}{{ end }}
+    </main>
+    {{ partial "footer.html" . }}
+    {{ $script := resources.Get "js/main.js" | minify | fingerprint }}{{/* 指纹用于 immutable Cache-Control，见 static/_headers:10 */}}
+    <script src="{{ $script.RelPermalink }}" integrity="{{ $script.Data.Integrity }}" defer fetchpriority="low"></script>
+  </body>
+</html>

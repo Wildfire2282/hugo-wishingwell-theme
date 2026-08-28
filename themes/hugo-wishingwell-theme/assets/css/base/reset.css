@@ -1,0 +1,197 @@
+/* ==========================================================================
+   Reset · 基础层 / 全局重置与管线起点
+   --------------------------------------------------------------------------
+   使命：提供跨浏览器最小基线——盒模型、文档平滑滚动与安全区、焦点
+   与选区语义、版心容器、阅读进度与触控基线；输入：语义层
+   --paper/--tap-highlight/--focus-ring 等与 RUI 间距/字阶/动效刻度；
+   禁令：禁止组件层覆写本层焦点、版心与进度语义，禁止新增裸色与
+   非 RUI 间距；关联：见 DESIGN.md §3 架构与 §8 可访问性基线，
+   tokens 见 primitives/semantic 层。
+   ========================================================================== */
+
+/* ---- 盒模型与文档 ---- */
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scrollbar-gutter: stable;
+}
+
+/* 锁定态由 JS 同步 html.is-locked，主路径不依赖 :has；:has 仅作增强兜底，见 header.css 同步逻辑。 */
+
+html:has(.site-nav.is-open),
+html:has(.site-header__end.is-open),
+html:has(.toc-sheet.is-open) { overflow: hidden; }
+
+@supports not selector(:has(*)) {
+  html.is-nav-open,
+  html.is-locked { overflow: hidden; }
+}
+
+/* 通用锁定态：抽屉或目录展开时禁背景滚动穿透，配合 overscroll-behavior 阻断链式滚动。 */
+
+html.is-locked {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+/* ---- 纸墨基线 ---- */
+
+/* 根纸墨与排版由语义层驱动，本层仅约束可读性与视口安全区，避免
+   横向溢出与链式回弹，见 DESIGN.md §4 纸墨与 §7.1 视口单位回退。 */
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: clip;
+  overscroll-behavior-y: contain;
+  -webkit-tap-highlight-color: var(--tap-highlight);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+/* ---- 媒体与文本重置 ---- */
+
+/* 媒体块化并限宽避免撑破版心；链接与表单继承纸墨语义，不设裸色。 */
+
+img,
+svg,
+video { display: block; max-width: 100%; }
+
+a { color: inherit; text-decoration: none; }
+
+button,
+input { font: inherit; color: inherit; }
+
+h1, h2, h3, h4, h5, h6, p, figure, blockquote, pre { margin: 0; }
+
+ul[class], ol[class] { margin: 0; padding: 0; list-style: none; }
+
+/* ---- 焦点 ---- */
+
+/* 焦点环统一 2px 实线 + 3px 外扩，满足 WCAG 2.4.7 可见性且与
+   --accent 绑定，见 DESIGN.md §8 与 tokens/semantic --focus-ring-color。 */
+
+:focus-visible {
+  outline: 2px solid var(--focus-ring-color);
+  outline-offset: 3px;
+}
+
+/* ---- 选区 ---- */
+
+/* 选区底色走 --selection-bg（well-200），前景回墨色以保证对比度可读。 */
+
+::selection {
+  background: var(--selection-bg);
+  color: var(--text-primary);
+}
+
+/* ---- 辅助 ---- */
+
+/* 视觉隐藏但保留朗读顺序，供 a11y 专用文本与跳过链接基座使用。 */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* 跳过链接：首焦可见，平时移出视口；定位以 16px/12px 对齐 RUI
+   刻度（分别取 --space-4/--space-3 字面量以兼容 env() 混算，已
+   对齐 --tap-min 触控基线），偏移由 reducedMotion 无关。 */
+
+.skip-link {
+  position: fixed;
+  left: calc(16px + env(safe-area-inset-left, 0px)); /* RUI豁免: 16px = --space-4，calc 与 env 混排保留字面量 */
+  top: calc(12px + env(safe-area-inset-top, 0px)); /* RUI豁免: 12px = --space-3，原因同上 */
+  z-index: var(--z-skip);
+  padding: var(--space-2) var(--space-3);
+  background: var(--text-primary);
+  color: var(--ink-inverse);
+  transform: translateY(-160%);
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+.skip-link:focus-visible { transform: translateY(0); }
+
+@supports not selector(:focus-visible) {
+  .skip-link:focus { transform: translateY(0); }
+}
+
+/* ---- 版心 ---- */
+
+/* 版心由 --shell-max 与 --shell-gutter 统一约束，max-width 二次以
+   safe-area 抵消双扣溢出，禁止组件私自定宽破坏一维纵排对齐。 */
+
+.page-shell,
+.site-header__inner,
+.site-footer__inner {
+  width: min(var(--shell-max), calc(100% - var(--shell-gutter) * 2));
+  max-width: calc(100% - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+  margin-inline: auto;
+}
+
+/* ---- 阅读进度条 ---- */
+
+/* 置顶 2px 进度条，JS 以 scaleX 驱动，避免布局抖动；仅装饰，无可访问语义。 */
+
+.reading-progress {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: var(--z-progress);
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-strong));
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+/* ---- 细滚动条 ---- */
+
+/* 仅代码块与横向表格启用细滚动条，收敛至 1px 轨道；保留触控滚动
+   与横向 overscroll 隔离，scroll-padding-inline 取 --space-4。 */
+
+.prose pre,
+.table-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-control) transparent;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scroll-padding-inline: var(--space-4);
+}
+
+/* ---- 触控与可读性 ---- */
+
+/* 移动端回退 scrollbar-gutter、iOS 输入 16px 下限防自动缩放、触控
+   300ms 延迟消除与高亮统一走 --tap-highlight；旧 WebKit 以
+   -webkit-fill-available 兜底 100dvh，见 DESIGN.md §7.1。 */
+
+@media (max-width: 720px) {
+  html { scrollbar-gutter: auto; }
+}
+
+input,
+textarea,
+select { font-size: max(16px, 1em); } /* RUI豁免: 16px 为 iOS 防缩放下限，非间距刻度 */
+
+button { touch-action: manipulation; }
+
+a, button { -webkit-tap-highlight-color: var(--tap-highlight); }
+
+@supports not (height: 100dvh) {
+  html { height: -webkit-fill-available; }
+}

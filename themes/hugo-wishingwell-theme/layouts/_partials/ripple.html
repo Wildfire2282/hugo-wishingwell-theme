@@ -1,0 +1,25 @@
+{{ $variant := .variant | default "default" }}
+<div class="ripple-art ripple-art--{{ $variant }}" aria-hidden="true">
+  <svg viewBox="0 0 640 640" role="presentation">
+    <g class="ripple-art__rings" fill="none">
+      <ellipse cx="326" cy="332" rx="74" ry="70" />
+      <ellipse cx="318" cy="338" rx="132" ry="126" />
+      <ellipse cx="331" cy="325" rx="196" ry="188" />
+      <ellipse cx="312" cy="345" rx="264" ry="252" />
+      <ellipse cx="328" cy="326" rx="330" ry="316" />
+    </g>
+    <path class="ripple-art__accent" d="M145 220c47-78 132-126 224-119" fill="none" />
+    <g class="ripple-art__glints">
+      <circle cx="212" cy="196" r="2" />
+      <circle cx="472" cy="242" r="1.5" />
+      <path d="M514 350h18M523 341v18" />
+      <path d="M176 421h12M182 415v12" />
+    </g>
+    <circle class="ripple-art__point" cx="326" cy="332" r="4" />
+    <g class="ripple-art__label">
+      <path d="M338 332h58" />
+      <text x="406" y="328">WISH/001</text>
+      <text x="406" y="345">31.26 / 58.07</text>
+    </g>
+  </svg>
+</div>

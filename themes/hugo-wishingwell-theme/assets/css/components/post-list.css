@@ -1,0 +1,382 @@
+/* ==========================================================================
+   Post List · 组件 / 区块标签与文章流
+   --------------------------------------------------------------------------
+   使命：首页与列表页的文章流容器，含区块标签、精选卡、文章行与查看全
+   部链接；承担「井口」以下的内容沉淀与悬停回响。
+   禁令：禁止直引 --wp-* 原语与 color·mix；禁止硬编码色值与时长；栅格
+   固定列宽 72px/180px 为布局豁免，叙事量度 720px 等豁免需注明。
+   关联：见 DESIGN.md §7 “Section label / Post row / Featured” 与 §7.1
+   移动端单列与信息密度；入场动效见 utilities/motion.css rise-in。
+   ========================================================================== */
+
+/* ---- 区块标签 · mono 小标签 + 序号圆圈，悬停短线拉至 92px ---- */
+.section-label {
+  position: relative;
+  padding: var(--space-6) 0;
+  display: flex;
+  justify-content: space-between;
+  border-bottom: var(--border-width) solid var(--border-default);
+}
+
+.home .section-label { padding-block: var(--space-4); }
+
+.section-label::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: calc(var(--border-width) * -1);
+  width: var(--tap-min);
+  height: var(--border-width);
+  background: var(--accent);
+  transition: width var(--dur-slow) var(--ease-out);
+}
+
+.section-label h2,
+.section-label span {
+  margin: 0;
+  font: var(--text-xs)/1.2 var(--font-functional);
+  letter-spacing: 0.1em;
+}
+
+.section-label > span {
+  display: inline-flex;
+  min-width: 25px; /* RUI豁免: 25px 序号圆点，非间距 */
+  height: 25px; /* RUI豁免: 同上 */
+  margin-top: calc(var(--space-2) * -1);
+  align-items: center;
+  justify-content: center;
+  border: var(--border-width) solid var(--border-default);
+  border-radius: 50%;
+  color: var(--text-faint);
+  font-size: var(--text-xs);
+}
+
+/* 预留：section-label__text 已随“继续阅读” pill 移除而废弃，如需复用再恢复 */
+@media (hover: hover) and (pointer: fine) {
+  .featured:hover .section-label::before,
+  .featured:focus-within .section-label::before,
+  .latest:hover .section-label::before,
+  .latest:focus-within .section-label::before,
+  .related:hover .section-label::before,
+  .related:focus-within .section-label::before { width: var(--space-9); }
+}
+
+/* ---- 精选 · 2px 左缘 accent 条，悬停浮现 --surface-lift 与 --shadow-1 ---- */
+.featured { margin-bottom: var(--space-10); }
+
+.featured-post {
+  position: relative;
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) 180px; /* 精选去日期但保留 72px 占位，与下方 post-row 标题纵向对齐 */
+  gap: var(--space-7);
+  padding: var(--space-6) var(--space-4);
+  background: var(--surface-veil);
+  border-bottom: var(--border-width) solid var(--border-default);
+  transition: background-color var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
+}
+
+.featured-post__body { grid-column: 2; }
+.featured-post__meta { grid-column: 3; }
+
+.featured-post__date { display: none; } /* 精选去日期：彻底隐藏，保留 72px 占位对齐 */
+
+.featured-post::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--border-width-thick);
+  background: var(--accent);
+  transition: width var(--dur-base) var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .featured-post:hover {
+    background: var(--surface-lift);
+    box-shadow: var(--shadow-1);
+  }
+
+  .featured-post:hover::before { width: var(--space-1); }
+}
+
+.featured-post__date {
+  padding-top: var(--space-6);
+  color: var(--text-meta);
+  font: var(--text-xs)/1.3 var(--font-functional);
+}
+
+/* ---- 主题标识 · 井水蓝短线点缀，需与标题色区分 ---- */
+.topic {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+  color: var(--accent);
+  font-size: var(--text-sm);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.topic::before {
+  content: "";
+  width: var(--space-4);
+  height: var(--border-width);
+  background: currentColor;
+}
+
+.topic:hover,
+.topic:focus-visible { color: var(--accent-strong); }
+
+.featured-post h3 {
+  max-width: 720px; /* RUI豁免: 720px 内容量度，对应 --measure */
+  margin: 0;
+  font-family: var(--font-title);
+  font-size: var(--step-2);
+  line-height: var(--leading-normal);
+  letter-spacing: -0.025em;
+  font-weight: var(--weight-bold);
+}
+
+.featured-post h3 a,
+.post-row h2 a,
+.post-row h3 a {
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.featured-post h3 a:hover,
+.featured-post h3 a:focus-visible,
+.post-row h2 a:hover,
+.post-row h2 a:focus-visible,
+.post-row h3 a:hover,
+.post-row h3 a:focus-visible { color: var(--accent); }
+
+.featured-post__body p {
+  max-width: 680px; /* RUI豁免: 680px 量度，接近 --measure */
+  margin: var(--space-2) 0 0;
+  color: var(--text-secondary);
+  font: var(--text-base)/1.65 var(--font-body);
+}
+
+.featured-post__meta {
+  padding-top: var(--space-6);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-3);
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+}
+
+.featured-post__meta a,
+.post-row__meta a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: var(--space-1);
+  text-decoration-thickness: var(--border-width);
+  transition: color var(--dur-fast) var(--ease-out),
+    text-decoration-color var(--dur-fast) var(--ease-out);
+}
+
+.featured-post__meta a:hover,
+.featured-post__meta a:focus-visible,
+.post-row__meta a:hover,
+.post-row__meta a:focus-visible {
+  color: var(--accent-strong);
+  text-decoration-color: var(--accent-strong);
+}
+
+/* ---- 滚动入场 · 由 JS 加 .reveal/.is-revealed 触发 rise-in ---- */
+.js .reveal { opacity: 0; }
+
+.js .reveal.is-revealed {
+  animation: rise-in var(--dur-slow) var(--ease-out) both;
+}
+
+/* ---- 文章行 · 三栏 72/1fr/180，悬停左侧 12px 指示针与纸面微亮 ---- */
+.latest { margin-bottom: var(--space-8); }
+
+.post-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr) 180px; /* RUI豁免: 92px 为 2006年12月12日完整显示所需（最长 11 字符≈88px+余量），原 72px 仅容 1月2日，列表页 2006年1月2日会换行 */
+  gap: var(--space-7);
+  padding: var(--space-6) var(--space-4);
+  transition: background-color var(--dur-base) var(--ease-out);
+}
+
+.post-row::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 0;
+  height: var(--border-width);
+  background: var(--accent);
+  transition: width var(--dur-base) var(--ease-out);
+}
+
+.post-row:hover,
+.post-row:focus-within { background: var(--surface-lift); }
+
+.post-row:hover::before,
+.post-row:focus-within::before { width: var(--space-3); }
+
+.post-row__date {
+  padding-top: var(--space-2);
+  color: var(--text-meta);
+  font: var(--text-xs)/1.3 var(--font-functional);
+  white-space: nowrap; /* 日期单行完整显示，列表页 2006年1月2日不换行 */
+}
+.post-row h2 {
+  margin: 0;
+  font-family: var(--font-title);
+  font-size: var(--step-2);
+  line-height: var(--leading-normal);
+  letter-spacing: -0.025em;
+  font-weight: var(--weight-bold);
+  color: var(--text-secondary);
+}
+
+.post-row h3 {
+  margin: 0;
+  font-family: var(--font-title);
+  font-size: var(--step-2);
+  line-height: var(--leading-normal);
+  letter-spacing: -0.025em;
+  font-weight: var(--weight-bold);
+}
+
+.post-row__body p {
+  max-width: 660px; /* RUI豁免: 660px 量度，接近 --measure */
+  margin: var(--space-2) 0 0;
+  color: var(--text-secondary);
+  font: var(--text-sm)/1.6 var(--font-body);
+}
+
+.post-row__meta {
+  padding-top: var(--space-1);
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+}
+
+/* ---- 查看全部 · 文字链接配箭头，hover 时箭头 4px 位移 ---- */
+.text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-5);
+  margin-top: var(--space-8);
+  color: var(--accent);
+  font-size: var(--text-sm);
+  border-bottom: var(--border-width) solid var(--accent);
+  padding-bottom: var(--space-1);
+  transition: color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.text-link span { transition: transform var(--dur-base) var(--ease-out); }
+
+.text-link:hover,
+.text-link:focus-visible {
+  color: var(--accent-strong);
+  border-bottom-color: var(--accent-strong);
+}
+
+.text-link:hover span,
+.text-link:focus-visible span { transform: translateX(var(--space-1)); }
+
+@media (min-width: 721px) {
+  .featured { margin-bottom: var(--space-8); } /* 桌面精选→更多文章 128→64 一半 */
+  .text-link { margin-top: var(--space-6); } /* 桌面更多文章→查看全部 64→32 一半 */
+}
+@media (max-width: 900px) {
+  .featured-post { grid-template-columns: 60px minmax(0, 1fr); /* 精选去日期但保留 60px 占位，与下方 post-row 对齐 */ }
+  .featured-post__body { grid-column: 2; }
+  .featured-post__meta {
+    grid-column: 2;
+    padding-top: 0;
+    justify-content: flex-start;
+  }
+
+  .post-row { grid-template-columns: 80px minmax(0, 1fr); /* RUI豁免: 80px 容纳 2006年1月2日单行，原 60px 会换行 */ }
+
+  .post-row__meta { grid-column: 2; justify-content: flex-start; }
+}
+
+@media (max-width: 720px) {
+  .section-label { padding-block: var(--space-2); margin-bottom: 0; gap: var(--space-2); }
+
+  .section-label h2 { font-size: var(--text-xs); }
+
+  .section-label::before { display: none; }
+
+  .featured { margin-bottom: var(--space-4); }
+
+  .featured-post {
+    grid-template-columns: 1fr;
+    padding: var(--space-3);
+    gap: var(--space-2);
+    border: 0;
+    border-bottom: var(--border-width) solid var(--border-default);
+    background: transparent;
+  }
+
+  .featured-post::before { display: none; }
+
+  .featured-post__body { grid-column: 1; }
+
+  .featured-post__date { padding-top: 0; font-size: var(--text-xs); letter-spacing: 0.06em; }
+
+  .featured-post__meta {
+    grid-column: 1;
+    padding-top: 0;
+    font-size: var(--text-xs);
+    gap: var(--space-2);
+    justify-content: flex-start;
+  }
+
+  .featured-post h3 {
+    font-size: var(--text-base);
+    line-height: var(--leading-snug);
+  }
+
+  .featured-post__body p {
+    margin-top: var(--space-1);
+    font-size: var(--text-sm);
+    line-height: var(--leading-normal);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .post-row {
+    grid-template-columns: 1fr;
+    gap: var(--space-1);
+    padding: var(--space-3) 0;
+    border-bottom: var(--border-width) solid var(--border-default);
+  }
+
+  .post-row::before { display: none; }
+
+  .post-row:hover,
+  .post-row:focus-within { background: transparent; }
+
+  .post-row__date { font-size: var(--text-xs); letter-spacing: 0.06em; }
+
+  .post-row h2,
+  .post-row h3 { font-size: var(--text-base); line-height: var(--leading-snug); }
+
+  .post-row__body p { margin-top: var(--space-1); font-size: var(--text-sm); line-height: var(--leading-normal); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+  .post-row__meta { grid-column: 1; font-size: var(--text-xs); gap: var(--space-2); }
+
+  .latest { margin-bottom: var(--space-4); }
+
+  .text-link { margin-top: var(--space-3); font-size: var(--text-sm); min-height: var(--tap-min); }
+
+  .hero__nav a,
+  .article-tags a,
+  .text-link { min-height: var(--tap-min); }
+}

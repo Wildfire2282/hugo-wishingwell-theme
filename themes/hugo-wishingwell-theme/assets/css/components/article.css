@@ -1,0 +1,232 @@
+/* ==========================================================================
+   Article · 组件 / 文章页纵向节奏与双栏
+   --------------------------------------------------------------------------
+   使命：文章页纵向节奏容器，头 80/32 → 分隔 32↔32 → 正文 → 脚注
+   32↔32 → 标签 24/40 → 相关 16 三级递减；双栏 720+180 gap 32–64。
+   禁令：禁止直引 --wp-* 原语与 color·mix；禁止硬编码色值；装饰圆点
+   7/15/25px 为点缀豁免，量度与间隙均走 RUI 刻度。
+   关联：见 DESIGN.md §7 “Article” 与 §7.1 移动端纵向压缩；分隔线与
+   文末 tags 同规，max-width 以 --measure 对齐。
+   ========================================================================== */
+
+.article {
+  --measure: 760px; /* 文章正文扩宽 720→760，目录相应缩至 140，见用户需求 */
+  padding-bottom: var(--space-8);
+}
+/* ---- 文章头 · 顶距 --space-8，宽度以 --measure-wide 收束 ---- */
+.article-header {
+  position: relative;
+  max-width: var(--measure-wide);
+  padding: var(--space-8) 0 var(--space-8);
+}
+
+/* ---- 标题 · 隶书 --display-article，-0.06em 收紧以显分量 ---- */
+.article-header h1 {
+  margin: 0;
+  font-size: var(--display-article);
+  line-height: var(--leading-tight);
+  letter-spacing: -0.06em;
+}
+
+/* ---- 导语 · 19px/1.7 衬线，量度以 --measure 约束 ---- */
+.article-deck {
+  max-width: var(--measure);
+  margin: var(--space-6) 0;
+  color: var(--text-secondary);
+  font: 19px/1.7 var(--font-body); /* RUI豁免: 19px 导语字阶，非 RUI 间距；贴合 1.7 行高叙事 */
+  font-weight: var(--weight-normal);
+}
+
+/* ---- 元信息 · mono 12px，gap 走 RUI --space-2/5 ---- */
+.article-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  color: var(--text-meta);
+  font: var(--text-xs)/1.5 var(--font-functional);
+}
+
+/* ---- 双栏布局 · 左 760 右 140，gap 32–64 流式伸缩 ---- */
+.article-layout {
+  display: grid;
+  grid-template-columns: minmax(0, var(--measure)) minmax(140px, 1fr);
+  gap: clamp(32px, 5vw, 64px);
+  align-items: start;
+  min-width: 0;
+}
+
+.article-content {
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+}
+
+/* ---- 头-正文分隔 · 2px --border-default，上下各 --space-8 对称 ---- */
+.article-divider {
+  display: block;
+  max-width: var(--measure);
+  margin: 0;
+  border: 0;
+  border-top: var(--border-width-thick) solid var(--border-default);
+  padding-top: var(--space-8);
+}
+
+/* ---- 文章脚注 · 上距 --space-8，承载标签与相关 ---- */
+.article-footer {
+  max-width: var(--measure);
+  margin-top: var(--space-8);
+}
+
+/* ---- 标签 · 胶囊边框以 --border-control 保证 3:1，悬停走 --accent-wash ---- */
+.article-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: var(--space-6) 0 var(--space-10);
+  border-top: var(--border-width) solid var(--border-default);
+}
+
+.article-tags a {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--tap-min);
+  padding: var(--space-2) var(--space-2);
+  overflow: hidden;
+  border: var(--border-width) solid var(--border-control);
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  transition: color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out);
+}
+
+.article-tags a:hover,
+.article-tags a:focus-visible {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-wash);
+}
+
+/* ---- 相关文章 · 底部分隔线配右箭头位移 2px 回响 ---- */
+.related-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-4);
+  padding: var(--space-4) 0;
+  border-bottom: var(--border-width) solid var(--border-default);
+}
+
+.related-item span {
+  transition: color var(--dur-fast) var(--ease-out),
+    transform var(--dur-base) var(--ease-out);
+}
+
+.related-item:hover span,
+.related-item:focus-visible span {
+  color: var(--accent);
+  transform: translateX(2px);
+}
+
+.related-item time {
+  color: var(--text-meta);
+  font: var(--text-xs)/1 var(--font-functional);
+}
+
+/* ---- 返回顶部 · 滚过一屏浮现，固定右下，随 toc FAB 避让 ---- */
+.back-to-top {
+  display: none;
+  position: fixed;
+  right: calc(clamp(12px, 4vw, 48px) + env(safe-area-inset-right, 0px)); /* RUI豁免: 12px/48px 视口边距，非间距刻度 */
+  bottom: calc(clamp(16px, 4vw, 48px) + env(safe-area-inset-bottom, 0px)); /* RUI豁免: 16px/48px 同上 */
+  z-index: var(--z-backtotop);
+  width: var(--tap-min);
+  height: var(--tap-min);
+  place-items: center;
+  padding: 0;
+  border: var(--border-width) solid var(--border-control);
+  background: var(--surface-lift);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  color: var(--text-secondary);
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition: opacity var(--dur-base) var(--ease-out),
+    transform var(--dur-base) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
+}
+
+.js .back-to-top { display: grid; }
+
+.back-to-top.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.back-to-top:hover,
+.back-to-top:focus-visible {
+  color: var(--accent);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-1);
+}
+
+.back-to-top svg {
+  width: 16px; /* RUI豁免: 16px 图标尺寸，非间距 */
+  height: 16px; /* RUI豁免: 同上 */
+}
+
+@media (max-width: 900px) {
+  .article-layout {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .article-content {
+    grid-column: 1;
+    grid-row: 1;
+    max-width: var(--measure);
+  }
+
+  .article-header h1 {
+    font-size: clamp(24px, 7.5vw, 32px);
+    line-height: var(--leading-tight);
+    letter-spacing: -0.03em;
+    overflow-wrap: anywhere;
+  }
+
+
+  @supports (word-break: auto-phrase) {
+    .article-header h1 { word-break: auto-phrase; }
+  }
+
+  .article-deck { margin: var(--space-2) 0; font-size: var(--text-sm); line-height: var(--leading-loose); }
+
+  .article-meta { gap: var(--space-2); font-size: var(--text-xs); flex-wrap: wrap; }
+
+  .article-divider { margin-inline: 0; padding-top: var(--space-4); border-top-width: var(--border-width); }
+  .article-tags { gap: var(--space-2); }
+
+  .article-tags a { min-height: var(--tap-min); padding: var(--space-2) var(--space-2); font-size: var(--text-xs); }
+
+
+  .related { margin-top: var(--space-5); }
+
+  .related .section-label { padding-block: var(--space-2); }
+
+  .related-item { min-height: var(--tap-min); display: flex; align-items: center; padding: var(--space-2) 0; gap: var(--space-2); font-size: var(--text-sm); line-height: var(--leading-snug); border-bottom: var(--border-width) solid var(--border-default); }
+
+  .related-item time { font-size: var(--text-xs); }
+
+  .back-to-top { width: var(--tap-min); height: var(--tap-min); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); background: var(--surface-lift); -webkit-backdrop-filter: none; backdrop-filter: none; }
+
+  .js .toc-fab ~ .back-to-top { bottom: calc(68px + env(safe-area-inset-bottom, 0px)); } /* RUI豁免: 68px FAB 避让偏移，非间距 */
+
+  .js .toc-fab[hidden] ~ .back-to-top { bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
+}

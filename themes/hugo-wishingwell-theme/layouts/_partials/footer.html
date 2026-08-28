@@ -1,0 +1,16 @@
+{{/* ==========================================================================
+   footer.html · _partials / 页脚
+   --------------------------------------------------------------------------
+   单行：版权 + 必要链接 + 可选备案号；备案号由 site.Params.beian 提供，
+   不配置则不渲染，避免硬编码；链接指向工信部备案查询。
+   关联：hugo.toml [params] beian（可选）
+   ========================================================================== */}}
+<footer class="site-footer">
+  <div class="site-footer__inner">
+    <span>© {{ now.Year }} {{ site.Title }}</span>
+    <nav aria-label="页脚导航">
+      <a href="{{ "about/" | relURL }}">关于</a>
+      {{ with site.Params.beian }}<a href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer">{{ . }}</a>{{ end }}
+    </nav>
+  </div>
+</footer>

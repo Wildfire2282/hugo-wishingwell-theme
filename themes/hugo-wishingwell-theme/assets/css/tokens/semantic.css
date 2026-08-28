@@ -1,0 +1,111 @@
+/* ==========================================================================
+   语义映射层 · Tokens / Semantic —— 原始刻度的语义封装
+   --------------------------------------------------------------------------
+   使命：将 --wp-* 原始刻度映射为带含义的语义 token（表面、文字层
+   级、边框层级、强调色系与覆盖派生），组件仅消费本层；输入：
+   primitives.css 的全部 --wp-* 与 RUI 刻度；禁令：禁止组件直引
+   --wp-*、禁止裸 hex、禁止组件层运行时 color-mix（仅本层允许
+   55%／72% 等克制派生）；关联：见 DESIGN.md §4 语义表与 §4.6
+   派生增量，新增色需先入 ramp 再引用本层。
+   ========================================================================== */
+
+:root {
+  color-scheme: light /* 亮色基准：纸墨体系。 */;
+
+  /* ---- 表面 — 纸面承载内容，抬升靠半透明而非实色块 ---- */
+  --paper: var(--wp-paper-50) /* 暖灰纸面：#f7f7f4 为页面底，承载 45em measure。 */;
+  --surface: var(--wp-paper-0) /* 纯白抬升：#ffffff 卡片与悬停行基色，vs --paper 微抬 2%。 */;
+  --surface-veil: color-mix(in srgb, var(--surface) 55%, transparent) /* 55% 半透明纸面：卡片悬停抬升，避免生硬色块；派生自 --surface。 */;
+  --surface-lift: color-mix(in srgb, var(--surface) 72%, transparent) /* 72% 半透明纸面：行悬停更实，保留纸感分层。 */;
+  --code-bg: var(--wp-paper-125) /* 代码底：#eff0ed 行内与块级代码统一底色。 */;
+  --code-bar-bg: color-mix(in srgb, var(--wp-paper-100) 72%, transparent) /* 72% 浅灰衬底：代码块顶栏，基于 --wp-paper-100；语义封装避免组件直引原语。 */;
+  --ink-inverse: var(--wp-paper-50) /* 反色字：#f7f7f4 深底上的暖白字，用于深色徽标。 */;
+
+  /* ---- 文字层级 — 墨深浅四级建立层次，非字号堆叠 ---- */
+  --text-primary: var(--wp-ink-900) /* 主文：#181a1b 标题与正文，vs --surface 15:1。 */;
+  --text-secondary: var(--wp-ink-500) /* 说明：#686b6d 摘要与说明，vs --surface 5.6:1。 */;
+  --text-meta: var(--wp-ink-450) /* 元数据：#62676a mono 日期与标签，vs --surface 5.1:1。 */;
+  --text-faint: var(--wp-paper-500) /* 弱化：#969a9d 装饰性弱文字，vs --surface 3:1 阈值内装饰豁免。 */;
+
+  /* ---- 边框层级 — 结构线与控件线的对比度分级 ---- */
+  --border-strong: var(--wp-ink-900) /* 强分隔：#181a1b 页头／页眉底线，1.34:1 decorative／functional 靠 2px 加粗区分。 */;
+  --border-default: var(--wp-paper-300) /* 常规分隔：#dedfd9 1.34:1 decorative，豁免 WCAG 1.4.11。 */;
+  --border-control: var(--wp-ink-400) /* 控件描边：#7d8184 3.66:1 vs --surface #fff 达 WCAG 1.4.11 3:1；原 --wp-paper-400 2.0:1 过浅。 */;
+  --border-muted: color-mix(in srgb, var(--border-default) 70%, transparent) /* 70% 极淡分隔：移动端导航项分隔，派生自 --border-default。 */;
+
+  /* ---- 强调 · 井水蓝 — 唯一点睛色，只做回应与焦点 ---- */
+  --accent: var(--wp-well-500) /* 主强调：#315c7c 链接与焦点环。 */;
+  --accent-strong: var(--wp-well-600) /* 加深强调：#27495f hover 态。 */;
+  --accent-deep: var(--wp-well-700) /* 深强调：#1e394b 按压与深色强调，reserved 逐步收敛硬编码加深。 */;
+  --accent-tint: var(--wp-well-100) /* 浅衬底：#e3ecf2 极浅蓝，reserved 供未来卡片 shallow 态。 */;
+  --accent-wash: color-mix(in srgb, var(--accent) 8%, transparent) /* 8% 水洗：标签悬停与当前页 wash，极淡避免喧宾。 */;
+  --accent-line: color-mix(in srgb, var(--accent) 18%, transparent) /* 18% 强调线：装饰图形与未激活下划线。 */;
+  --selection-bg: var(--wp-well-200) /* 选区底：#cbdbe5 vs --text-primary 满足 4.5:1。 */;
+
+  /* ---- 焦点 — 2px＋3px offset 不得省略 ---- */
+  --focus-ring-color: var(--accent) /* 焦点环：等同 --accent，统一井水蓝。 */;
+
+  /* ---- 交互与覆盖 — 全部 color-mix 派生，组件禁止直调 ---- */
+  --tap-highlight: color-mix(in srgb, var(--accent) 14%, transparent) /* 14% 触屏高亮：reset.css --tap-highlight 轻触反馈。 */;
+  --overlay-fab: color-mix(in srgb, var(--paper) 92%, transparent) /* 92% 半透纸面：悬浮按钮与 FAB，近实色保留纸感。 */;
+  --overlay-scrim: color-mix(in srgb, var(--paper) 40%, transparent) /* 40% 遮罩：底部弹层 scrim，透底内容。 */;
+  --backdrop-soft: color-mix(in srgb, var(--paper) 2%, transparent) /* 2% 极淡底：导航遮罩，仅桌面 backdrop-filter 配合。 */;
+  --code-row-alt: color-mix(in srgb, var(--code-bg) 50%, transparent) /* 50% 交替行：表格偶数行，基于 --code-bg。 */;
+  --scroll-fade: color-mix(in srgb, var(--border-default) 45%, transparent) /* 45% 滚动阴影：横向表格边缘 fade，基于 --border-default。 */;
+
+  /* ---- 版面 — 版心与量度，克制留白的容器约束 ---- */
+  --shell-max: 1180px /* 版心最大宽：1180，超出居中。 */;
+  --shell-gutter: clamp(16px, 5vw, 64px) /* 版心边距：16→64 流式，RUI 16／64 锚点。 */;
+  --measure: 720px /* 正文量度：720≈45em，45—75 字符舒适区。 */;
+  --measure-wide: 920px /* 宽量度：920 文章头与 Hero 宽容器。 */;
+  --header-h: 82px /* 头高桌面：82，吸顶与锚点偏移基准。 */;
+  --header-h-mobile: 56px /* 头高移动端：56，触控收紧。 */;
+  --tap-min: 44px /* 最小触控：44，WCAG 2.5.5 足够点击区。 */;
+
+  /* ---- 头部状态 — 毛玻璃与滚动浮现 ---- */
+  --header-bg: color-mix(in srgb, var(--paper) 88%, transparent) /* 88% 纸面：吸顶头部毛玻璃底，滚动后叠 --shadow-1。 */;
+}
+
+/* ==========================================================================
+   夜井 · 深色语义覆盖 —— 井的夜面：深井底×暖纸白字×提亮井水蓝
+   --------------------------------------------------------------------------
+   仅覆盖基础语义 token；派生 token 基于被覆盖值惰性求值，无需重复
+   定义；纸墨对比在暗色下反转，井水蓝提亮一阶以保 3:1 识别。
+   ========================================================================== */
+[data-theme="dark"] {
+  color-scheme: dark /* 暗色基准：井底深色。 */;
+
+  /* ---- 表面 — 深井底纸面 ---- */
+  --paper: hsl(206, 11%, 9%) /* #14171a。 */;
+  --surface: hsl(207, 12%, 13%) /* #1c2126。 */;
+  --code-bg: hsl(206, 14%, 8%) /* #12171c。 */;
+  --code-bar-bg: hsl(0 0% 100% / 0.05) /* 豁免：5% 白叠加暗色顶栏微亮，无法走 --wp-*，vs --code-bg 区分。 */;
+  --ink-inverse: hsl(206, 11%, 9%) /* #14171a。 */;
+
+  /* ---- 文字层级 — 暖纸白→弱灰，四级对深底 ---- */
+  --text-primary: hsl(44, 13%, 91%) /* #e9e7e0：暖纸白主文，vs --surface 12:1。 */;
+  --text-secondary: hsl(204, 6%, 70%) /* #b0b3b6：次级说明，vs --surface 7:1。 */;
+  --text-meta: hsl(206, 6%, 57%) /* #8b9298：元数据 mono，vs --surface 5.15:1 达 4.5:1。 */;
+  --text-faint: hsl(206, 6%, 37%) /* #565f66：弱化装饰，vs --surface 装饰豁免。 */;
+
+  /* ---- 边框层级 — 深底分隔需提亮 ---- */
+  --border-strong: hsl(40, 8%, 81%) /* #d0cec6：强分隔提亮，vs 深底 9:1。 */;
+  --border-default: hsl(207, 11%, 19%) /* #2e343a：常规分隔深灰，decorative。 */;
+  --border-control: hsl(206, 6%, 57%) /* #8b9298：5.15:1 vs --surface #1c2126 契合 WCAG 1.4.11 3:1；原 #3d444b 仅 1.64:1 过暗。 */;
+
+  /* ---- 强调 · 井水蓝提亮 — 暗底需更亮一阶 ---- */
+  --accent: var(--wp-well-400) /* 提亮主强调：#6b93ae 暗底可辨，原 500 过暗。 */;
+  --accent-strong: var(--wp-well-300) /* 提亮加深：#9db8ca hover 态。 */;
+  --accent-deep: var(--wp-well-500) /* 回落深强调：#315c7c 按压态。 */;
+  --accent-tint: hsl(206, 29%, 16%) /* #1d2b36：深蓝衬底，vs --surface 微差。 */;
+  --accent-wash: color-mix(in srgb, var(--accent) 10%, transparent) /* 10% 暗色水洗：比亮色 8% 略浓以补对比。 */;
+  --accent-line: color-mix(in srgb, var(--accent) 26%, transparent) /* 26% 暗色强调线：比亮色 18% 略浓。 */;
+  --selection-bg: hsl(205, 32%, 25%) /* #274156：暗色选区深蓝，vs --text-primary 6:1。 */;
+
+  /* ---- 阴影 — 暗底加深不透明度 ---- */
+  --shadow-1: 0 1px 3px hsl(0 0% 0% / 0.4) /* 暗色 0.4：header.is-scrolled。 */;
+  --shadow-2: 0 4px 6px hsl(0 0% 0% / 0.4) /* 暗色 0.4：下拉浮层。 */;
+  --shadow-3: 0 5px 15px hsl(0 0% 0% / 0.45) /* 暗色 0.45：中等浮层。 */;
+  --shadow-4: 0 10px 24px hsl(0 0% 0% / 0.5) /* 暗色 0.5：大浮层。 */;
+  --shadow-5: 0 15px 35px hsl(0 0% 0% / 0.55) /* 暗色 0.55：模态最高。 */;
+}

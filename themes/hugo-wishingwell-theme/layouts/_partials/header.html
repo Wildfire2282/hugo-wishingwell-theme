@@ -1,0 +1,32 @@
+{{/* ==========================================================================
+   header.html · _partials / 站点头部导航
+   --------------------------------------------------------------------------
+   渲染站名、主导航与昼夜切换；状态由 JS 以 aria-expanded／data-active
+   驱动，禁止在此硬编码开关状态。毛玻璃与滚动阴影由 CSS 按
+   is-scrolled 切换。
+   关联：docs/COMMENTS.md §5、docs/DESIGN.md §7、assets/js/main.js
+   ========================================================================== */}}
+<header class="site-header">
+  <div class="site-header__inner">
+    <a class="site-name" href="{{ site.Home.RelPermalink }}">{{ site.Title }}</a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="打开导航">
+      <span class="nav-toggle__label">导航</span>
+      <span class="nav-toggle__icon" aria-hidden="true"><i></i><i></i><i></i></span>
+    </button>
+    <div class="site-header__end">
+      <nav class="site-nav" id="site-nav" aria-label="主导航">
+        {{ range site.Menus.main }}
+          {{ $exact := $.IsMenuCurrent .Menu . }}
+          {{ $section := $.HasMenuCurrent .Menu . }}
+          <a href="{{ .URL }}"{{ if $exact }} aria-current="page"{{ else if $section }} aria-current="location"{{ end }}>{{ .Name }}</a>
+        {{ end }}
+      </nav>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-pressed="false" aria-label="切换深浅色模式">
+        <span class="theme-toggle__opt" data-mode="light" aria-hidden="true">昼</span>
+        <span class="theme-toggle__sep" aria-hidden="true">／</span>
+        <span class="theme-toggle__opt" data-mode="dark" aria-hidden="true">夜</span>
+      </button>
+    </div>
+  </div>
+  <button class="nav-backdrop" type="button" aria-label="关闭导航" hidden></button>
+</header>

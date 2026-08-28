@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 320" role="img" aria-labelledby="title desc">
+  <title id="title">Wishpond 水波示意图</title>
+  <desc id="desc">由中心向外扩散的蓝色椭圆水波。</desc>
+  <rect width="640" height="320" fill="#f7f7f4"/>
+  <g fill="none" stroke="#315c7c">
+    <ellipse cx="320" cy="160" rx="70" ry="32"/>
+    <ellipse cx="320" cy="160" rx="140" ry="64" opacity=".72"/>
+    <ellipse cx="320" cy="160" rx="220" ry="100" opacity=".44"/>
+  </g>
+  <circle cx="320" cy="160" r="4" fill="#315c7c"/>
+</svg>

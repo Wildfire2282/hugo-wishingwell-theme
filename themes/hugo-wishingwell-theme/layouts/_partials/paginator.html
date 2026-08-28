@@ -1,0 +1,26 @@
+{{/* ==========================================================================
+   paginator.html · _partials / 分页单一入口
+   --------------------------------------------------------------------------
+   熔断分页：head 先于 main 渲染，此处创建 paginator；list／term 复用
+   .Paginator 避免二次 Paginate 导致 panicOnWarning。非列表页返回
+   false，调用方需 with 判断；home／section／term／taxonomy 按需
+   选择集合并 Paginate。
+   关联：docs/COMMENTS.md §5、layouts/_partials/head.html:6、
+   layouts/list.html、layouts/term.html
+   ========================================================================== */}}
+{{/* 分页熔断：head 先于 main 渲染，此处创建 paginator；list／term 复用 .Paginator 避免二次 Paginate */}}
+{{ $paginator := false }}
+{{ if or (eq .Kind "home") (eq .Kind "section") (eq .Kind "term") (eq .Kind "taxonomy") }}
+  {{ if .Paginator }}
+    {{ $paginator = .Paginator }}
+  {{ else if eq .Kind "home" }}
+    {{ $paginator = .Paginate (where site.RegularPages "Section" "posts") }}
+  {{ else if eq .Kind "section" }}
+    {{ $paginator = .Paginate .RegularPagesRecursive }}
+  {{ else if eq .Kind "term" }}
+    {{ $paginator = .Paginate .RegularPages }}
+  {{ else if eq .Kind "taxonomy" }}
+    {{ $paginator = .Paginate .Pages }}
+  {{ end }}
+{{ end }}
+{{ return $paginator }}

@@ -1,0 +1,330 @@
+/* ==========================================================================
+   Header · 组件 / 全局导航与主题切换
+   --------------------------------------------------------------------------
+   使命：非首页吸顶头部，承载品牌、导航与昼夜切换；半透明纸面叠加
+   12px 毛玻璃，滚动后由 JS 赋 .is-scrolled 浮现边框与 --shadow-1。
+   禁令：禁止直引 --wp-* 原语与 color·mix 生调；禁止硬编码色值与时长；
+   装饰线 1px 豁免，其余功能线用 --border-width-thick 2px 以满足 3:1。
+   关联：见 DESIGN.md §7 “Header” 与 §7.1 移动端抽屉/遮罩；动效仅
+   opacity/transform/color，关键帧见 utilities/motion.css。
+   ========================================================================== */
+
+/* ---- 头部容器 · 吸顶毛玻璃，滚动后 is-scrolled 浮现边框与 --shadow-1 ---- */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-header);
+  background: var(--header-bg);
+  -webkit-backdrop-filter: blur(12px) saturate(1.15);
+  backdrop-filter: blur(12px) saturate(1.15);
+  border-bottom: var(--border-width) solid transparent;
+  transition: border-color var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .site-header { background: var(--paper); }
+}
+
+.site-header.is-scrolled {
+  border-bottom-color: var(--border-default);
+  box-shadow: var(--shadow-1);
+}
+
+/* ---- 强调短线 · 品牌色在结构线上的回响，72px 起步随视口至 150px ---- */
+.site-header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: calc(var(--border-width) * -1);
+  width: clamp(72px, 9vw, 150px); /* RUI豁免: 72px/150px 装饰短线，非间距刻度 */
+  height: var(--border-width);
+  background: var(--accent);
+}
+
+/* ---- 版心对齐 · 版心高度 --header-h，左右由 --shell-gutter 约束 ---- */
+.site-header__inner {
+  min-height: var(--header-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+/* ---- 品牌 · 隶书 20px/600，-0.055em 收紧以对齐纸面基线 ---- */
+.site-name {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--tap-min);
+  font-family: var(--font-title);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-bold);
+  letter-spacing: -0.055em;
+}
+
+.site-name::before {
+  content: "";
+  width: var(--space-2);
+  height: var(--space-2);
+  border: var(--border-width) solid var(--accent);
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 var(--border-width-thick) var(--paper);
+  background: var(--accent);
+}
+
+/* ---- 右侧组 · 导航与主题切换同行，gap 走 RUI --space-6 ---- */
+.site-header__end {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+/* ---- 主题切换 · 昼/夜 mono 双选项，data-active 时 accent 下划线标记 ---- */
+.theme-toggle {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  border: 0;
+  background: none;
+  color: var(--text-secondary);
+  font-family: var(--font-functional);
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+
+.theme-toggle__opt {
+  position: relative;
+  padding-bottom: var(--space-1);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.theme-toggle__opt::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: var(--border-width);
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+.theme-toggle__opt[data-active] {
+  color: var(--text-primary);
+}
+
+.theme-toggle__opt[data-active]::after { transform: scaleX(1); }
+
+.theme-toggle__opt:not([data-active]):hover {
+  color: var(--text-primary);
+}
+
+.theme-toggle__opt:not([data-active]):hover::after { transform: scaleX(1); }
+
+.theme-toggle:focus-visible .theme-toggle__opt::after { transform: scaleX(1); }
+
+.theme-toggle__sep { color: var(--text-faint); }
+
+/* ---- 导航 · mono 14px，下划线由 scaleX(0) 生长至 1，hover/focus 与 aria-current 同规 ---- */
+.site-nav {
+  display: flex;
+  gap: var(--space-6);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.site-nav a {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-min);
+  padding-block: var(--space-2);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.site-nav a::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 2px;
+  height: var(--border-width);
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+.site-nav a:focus-visible {
+  color: var(--text-primary);
+}
+
+.site-nav a:hover::after,
+.site-nav a:focus-visible::after,
+.site-nav a[aria-current]::after { transform: scaleX(1); }
+
+/* ---- 菜单开关 · 移动端 FAB 形态，桌面隐藏；以 --overlay-fab 实色承载 ---- */
+.nav-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: auto;
+  height: auto;
+  min-width: 0;
+  min-height: 0;
+  padding: var(--space-2);
+  border: 1px solid var(--border-control);
+  border-radius: 0;
+  background: var(--overlay-fab);
+  -webkit-backdrop-filter: blur(10px) saturate(1.15);
+  backdrop-filter: blur(10px) saturate(1.15);
+  box-shadow: var(--shadow-2);
+  color: var(--text-primary);
+  font: inherit;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.nav-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+.nav-toggle:focus-visible { outline: none; border-color: var(--accent); color: var(--accent); box-shadow: var(--shadow-3); } /* 焦点替代：以 1px --accent 边框 + --shadow-3 达 ≥3.66:1 非文本对比，替代全局 2px outline，见 a11y 审计。 */
+
+.nav-toggle[aria-expanded="true"] { border-color: var(--accent); background: var(--accent-wash); color: var(--accent-strong); }
+
+.nav-toggle__label { font: var(--text-xs)/1 var(--font-functional); letter-spacing: 0.08em; }
+
+.nav-toggle__icon,
+.nav-toggle__icon i { display: none !important; }
+
+/* ---- 遮罩 · 桌面隐藏，移动端由 JS 切换 hidden ---- */
+.nav-backdrop {
+  display: none;
+}
+
+.site-header__end[hidden] { display: none !important; }
+
+@media (max-width: 720px) {
+  :root { --header-h: var(--header-h-mobile); }
+
+  /* 移动端头部一律实色，无毛玻璃，避免低端机合成层闪烁与滚动性能回退 */
+  .site-header {
+    background: var(--paper);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .site-header::after { display: none; }
+
+  .site-header__inner {
+    flex-wrap: nowrap;
+    min-height: var(--header-h);
+    padding-block: var(--space-2);
+  }
+
+  .js .nav-toggle { display: inline-flex; }
+
+  .nav-toggle {
+    min-width: var(--tap-min);
+    min-height: var(--tap-min);
+    background: var(--paper);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: var(--shadow-1);
+  }
+
+  /* 抽屉：实色纸面 + 1px 顶线，无阴影/无模糊，纵向一维流；z-index 高于 backdrop 以保证链接可点 */
+  .site-header__end {
+    position: absolute;
+    top: calc(var(--header-h) + env(safe-area-inset-top, 0px));
+    left: 0;
+    right: 0;
+    z-index: 2;
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    max-height: calc(100dvh - var(--header-h) - env(safe-area-inset-top, 0px));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    background: var(--paper);
+    border-top: var(--border-width) solid var(--border-default);
+  }
+
+  @supports not (height: 100dvh) {
+    .site-header__end { max-height: calc(100vh - var(--header-h) - env(safe-area-inset-top, 0px)); }
+  }
+
+  .site-header__end.is-open {
+    display: flex;
+    animation: nav-reveal var(--dur-base) var(--ease-out);
+  }
+
+  .site-nav {
+    width: 100%;
+    flex-direction: column;
+    gap: 0;
+    padding: var(--space-2) 0;
+    border: 0;
+    background: transparent;
+  }
+
+  .site-nav a {
+    min-height: var(--tap-min);
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-sm);
+    line-height: var(--leading-normal);
+    color: var(--text-primary);
+  }
+
+  .site-nav a + a { border-top: var(--border-width) solid var(--border-muted); }
+
+  .site-nav a::after { display: none; }
+
+  /* 遮罩：实色半透，无模糊，轻量；z-index 低于抽屉 */
+  .nav-backdrop[hidden] { display: none; }
+
+  .nav-backdrop:not([hidden]) {
+    display: block;
+    position: fixed;
+    inset: calc(var(--header-h) + env(safe-area-inset-top, 0px)) 0 0;
+    z-index: 1;
+    border: 0;
+    padding: 0;
+    background: var(--overlay-scrim);
+    cursor: pointer;
+  }
+
+  .site-header:has(.site-header__end.is-open) {
+    border-bottom-color: var(--border-default);
+  }
+
+  /* 主题切换收纳于抽屉底部，紧凑 */
+  .theme-toggle {
+    display: inline-flex;
+    justify-content: flex-start;
+    width: 100%;
+    min-height: var(--tap-min);
+    align-items: center;
+    padding: var(--space-2) var(--space-3);
+    border-top: var(--border-width) solid var(--border-muted);
+    margin-top: 0;
+    gap: var(--space-2);
+  }
+
+  .theme-toggle__opt::after { display: none; }
+
+  .no-js .site-header__end {
+    position: static;
+    display: flex;
+    max-height: none;
+    border-top: 0;
+  }
+
+  .no-js .site-header__inner { flex-wrap: wrap; }
+
+  .no-js .site-header { position: relative; }
+}

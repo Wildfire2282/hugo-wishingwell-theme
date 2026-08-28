@@ -1,0 +1,192 @@
+/* ==========================================================================
+   Wish Drop · 组件 / 投币叙事动画
+   --------------------------------------------------------------------------
+   使命：Hero 右侧身份性瞬间，硬币沿抛物线落入井中，六层涟漪逐级扩散；
+   静态图层在此，时序与缓动由 motion.css 与 JS 状态机驱动。
+   禁令：禁止直引 --wp-* 原语与 color·mix；禁止硬编码色值；画布 400px
+   为叙事豁免，其余线宽与尺寸走语义或装饰豁免。
+   关联：见 DESIGN.md §7 “Hero / Wish Drop” 与 §7.1 移动端隐藏；动画
+   仅引用 --dur-hero 5000ms，状态见 assets/js/main.js。
+   ========================================================================== */
+
+/* ---- 容器 · 右下绝对定位，400px 叙事画布，随 Hero 同显隐 ---- */
+.wish-drop {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  width: 400px; /* RUI豁免: 400px 叙事画布，非间距 */
+  height: auto;
+  opacity: 0.62;
+}
+
+.wish-drop svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* ---- 导引线 · 8px mono 标注，初始透明由动画唤起 ---- */
+.wish-drop__guide {
+  fill: none;
+  font: 8px var(--font-functional); /* RUI豁免: 8px 图面标注，非字阶刻度 */
+  letter-spacing: 0.08em;
+  opacity: 0;
+}
+
+.wish-drop__trail {
+  fill: none;
+  stroke: var(--text-meta);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  stroke-dasharray: 18 16;
+  vector-effect: non-scaling-stroke;
+}
+
+.wish-drop__trail-mask {
+  fill: none;
+  stroke: var(--paper);
+  stroke-width: 5;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  vector-effect: non-scaling-stroke;
+}
+
+.wish-drop__guide text {
+  fill: var(--text-meta);
+  stroke: none;
+}
+
+/* ---- 硬币 · 纸面底饰，初始透明，落点由 coin-flight 驱动 ---- */
+.wish-drop__coin {
+  fill: var(--paper);
+  stroke: var(--text-meta);
+  stroke-width: 1;
+  opacity: 0;
+  vector-effect: non-scaling-stroke;
+}
+
+.wish-drop__coin-face {
+  transform-box: view-box;
+  transform-origin: 112px 206px; /* RUI豁免: 112px/206px 动画锚点，非间距 */
+  transform: scale(0.82);
+}
+
+.wish-drop__coin-mark {
+  fill: none;
+  stroke: var(--accent);
+}
+
+/* ---- 水花 · 圆点溅起，需与涟漪同心 ---- */
+.wish-drop__splash {
+  fill: var(--accent);
+  stroke: var(--accent);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0;
+  transform-box: view-box;
+  transform-origin: 280px 306px; /* RUI豁免: 280px/306px 溅起点，非间距 */
+  vector-effect: non-scaling-stroke;
+}
+
+.wish-drop__splash-lines { fill: none; }
+
+/* ---- 涟漪 · 六环由内至外，奇偶虚实交替，透明度递减 ---- */
+.wish-drop__ripples ellipse {
+  stroke: var(--border-default);
+  stroke-width: 1.15;
+  transform-box: view-box;
+  transform-origin: 280px 306px; /* RUI豁免: 涟漪同心锚点，非间距 */
+  vector-effect: non-scaling-stroke;
+}
+
+.wish-drop__ripples ellipse:nth-child(1) { stroke: var(--accent); opacity: 0.82; }
+
+.wish-drop__ripples ellipse:nth-child(2) { stroke: var(--accent); opacity: 0.68; }
+
+.wish-drop__ripples ellipse:nth-child(3) { stroke: var(--text-faint); stroke-dasharray: 7 8; opacity: 0.38; }
+
+.wish-drop__ripples ellipse:nth-child(4) { stroke: var(--accent); opacity: 0.44; }
+
+.wish-drop__ripples ellipse:nth-child(5) { stroke: var(--text-faint); stroke-dasharray: 11 10; opacity: 0.3; }
+
+.wish-drop__ripples ellipse:nth-child(6) { stroke: var(--accent); opacity: 0.2; }
+
+.wish-drop__impact {
+  fill: var(--accent);
+  opacity: 0.65;
+  filter: drop-shadow(0 0 3px var(--accent-line));
+  transform-box: view-box;
+  transform-origin: 280px 306px; /* RUI豁免: 冲击点锚点 */
+  vector-effect: non-scaling-stroke;
+}
+
+.wish-drop__ticks {
+  fill: var(--accent);
+  stroke: var(--accent);
+  stroke-width: 0.8;
+  opacity: 0.38;
+  vector-effect: non-scaling-stroke;
+}
+
+.wish-drop__caption {
+  fill: none;
+  stroke: var(--text-meta);
+  stroke-width: 0.7;
+  opacity: 0.38;
+  font: 8px var(--font-functional); /* RUI豁免: 8px 图面标注 */
+  letter-spacing: 0.08em;
+}
+
+.wish-drop__caption text {
+  fill: var(--text-meta);
+  stroke: none;
+}
+
+/* ---- 动画状态机 · 由 main.js 切换 pending/playing，已播后常显 ---- */
+.hero.is-animation-pending .wish-drop__ripples,
+.hero.is-animation-pending .wish-drop__impact,
+.hero.is-animation-pending .wish-drop__ticks,
+.hero.is-animation-pending .wish-drop__caption { opacity: 0; }
+
+.hero.is-playing .wish-drop__guide { animation: guide-cycle var(--dur-hero) ease 1; }
+
+.hero.is-playing .wish-drop__trail-mask { animation: trail-reveal var(--dur-hero) linear 1; }
+
+.hero.is-playing .wish-drop__coin { animation: coin-flight var(--dur-hero) linear 1; }
+
+.hero.is-playing .wish-drop__coin-face { animation: coin-spin var(--dur-hero) linear 1; }
+
+.hero.is-playing .wish-drop__splash { animation: splash-rise var(--dur-hero) ease-out 1; }
+
+.hero.is-playing .wish-drop__impact { animation: impact-pulse var(--dur-hero) ease-out 1; }
+
+.hero.is-playing .wish-drop__ticks,
+.hero.is-playing .wish-drop__caption { animation: annotation-cycle var(--dur-hero) ease-out 1; }
+
+.hero.is-playing .wish-drop__ripples ellipse:nth-child(1) { animation: ripple-one var(--dur-hero) ease-out 1; }
+
+.hero.is-playing .wish-drop__ripples ellipse:nth-child(2) { animation: ripple-two var(--dur-hero) ease-out 1; }
+
+.hero.is-playing .wish-drop__ripples ellipse:nth-child(3) { animation: ripple-three var(--dur-hero) ease-out 1; }
+
+.hero.is-playing .wish-drop__ripples ellipse:nth-child(4) { animation: ripple-four var(--dur-hero) ease-out 1; }
+
+.hero.is-playing .wish-drop__ripples ellipse:nth-child(5) { animation: ripple-five var(--dur-hero) ease-out 1; }
+
+.hero.is-playing .wish-drop__ripples ellipse:nth-child(6) { animation: ripple-six var(--dur-hero) ease-out 1; }
+
+@media (max-width: 900px) {
+  .wish-drop {
+    right: 0;
+    bottom: 0;
+    width: clamp(320px, 42vw, 400px); /* RUI豁免: 320px/400px 画布区间，非间距 */
+    opacity: 0.46;
+  }
+}
+
+@media (max-width: 720px) {
+  .wish-drop { display: none; }
+}

@@ -1,0 +1,190 @@
+/* ==========================================================================
+   Motion · 工具层 / 关键帧与降级
+   --------------------------------------------------------------------------
+   使命：收敛全站唯一动画编排的关键帧源，时长与缓动一律走语义 token
+   --dur-* 与 --ease-*，并在 prefers-reduced-motion 下瞬时化；
+   禁令：禁止组件层私自新增 @keyframes，禁止时长脱离 RUI 刻度与新增
+   非 token 缓动与布局属性过渡；关联：见 DESIGN.md §6 动效与
+   main.js Hero 状态机（pending → playing → has-played）。
+   ========================================================================== */
+
+/* ---- 移动端菜单 ---- */
+
+/* 触发者：.site-header__end.is-open → nav-reveal var(--dur-base) ease-out，单次展开，无 JS 监听。 */
+
+@keyframes nav-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---- 投币飞行 ---- */
+
+/* 触发者：.hero.is-playing .wish-drop__coin → coin-flight var(--dur-hero) 5s 线性，抛物线位移，随编排同步结束，无单独监听。 */
+
+@keyframes coin-flight {
+  0%, 2% { opacity: 1; transform: translate(0, 0); }
+  8% { opacity: 1; transform: translate(29.76px, -68.32px); }
+  14% { opacity: 1; transform: translate(61.44px, -92.48px); }
+  20% { opacity: 1; transform: translate(95.04px, -72.48px); }
+  26% { opacity: 1; transform: translate(130.56px, -8.32px); }
+  32% { opacity: 1; transform: translate(168px, 100px); }
+  34%, 100% { opacity: 0; transform: translate(168px, 100px); }
+}
+
+/* 触发者：.hero.is-playing .wish-drop__coin-face → coin-spin var(--dur-hero) 5s 线性，内层旋转，随 coin-flight 同步。 */
+
+@keyframes coin-spin {
+  0%, 2% { transform: scale(0.82) rotate(0deg); }
+  8% { transform: scale(0.82) rotate(62deg); }
+  14% { transform: scale(0.82) rotate(124deg); }
+  20% { transform: scale(0.82) rotate(186deg); }
+  26% { transform: scale(0.82) rotate(248deg); }
+  32%, 100% { transform: scale(0.82) rotate(310deg); }
+}
+
+/* ---- 入水回响 ---- */
+
+/* 触发者：.hero.is-playing .wish-drop__splash → splash-rise var(--dur-hero) 5s ease-out，水花绽放后回落。 */
+
+@keyframes splash-rise {
+  0%, 31% { opacity: 0; transform: scale(0.35); }
+  35% { opacity: 0.68; transform: scale(1); }
+  40% { opacity: 0.38; transform: scale(1.1); }
+  45%, 100% { opacity: 0; transform: scale(1.18); }
+}
+
+/* 触发者：.hero.is-playing .wish-drop__impact → impact-pulse var(--dur-hero) 5s ease-out，落点脉冲扩散。 */
+
+@keyframes impact-pulse {
+  0%, 31% { opacity: 0.35; transform: scale(0.7); }
+  35% { opacity: 1; transform: scale(1.5); }
+  44%, 100% { opacity: 0.65; transform: scale(1); }
+}
+
+/* 触发者：.hero.is-playing .wish-drop__ticks/.wish-drop__caption → annotation-cycle var(--dur-hero) 5s ease-out，标注淡入，不监听结束。 */
+
+@keyframes annotation-cycle {
+  0%, 32% { opacity: 0; }
+  40%, 100% { opacity: 0.38; }
+}
+
+/* ---- 涟漪扩散 ---- */
+
+/* 六层涟漪时序编排，单调递增延后显现，整体由 .hero.is-playing 驱动 5s；仅 ripple-six 作为编排终止信号被 JS 监听。 */
+
+/* 触发者：.hero.is-playing .wish-drop__ripples ellipse:nth-child(1) → ripple-one var(--dur-hero) 5s ease-out，首层最早显现。 */
+
+@keyframes ripple-one {
+  0%, 32% { opacity: 0; transform: scale(0.25); }
+  36% { opacity: 0.92; }
+  40%, 100% { opacity: 0.82; transform: scale(1); }
+}
+
+/* 触发者：.hero.is-playing .wish-drop__ripples ellipse:nth-child(2) → ripple-two var(--dur-hero) 5s ease-out，二层延后 2%。 */
+
+@keyframes ripple-two {
+  0%, 34% { opacity: 0; transform: scale(0.28); }
+  39% { opacity: 0.78; }
+  44%, 100% { opacity: 0.68; transform: scale(1); }
+}
+
+/* 触发者：.hero.is-playing .wish-drop__ripples ellipse:nth-child(3) → ripple-three var(--dur-hero) 5s ease-out，三层虚线延后。 */
+
+@keyframes ripple-three {
+  0%, 37% { opacity: 0; transform: scale(0.3); }
+  43% { opacity: 0.46; }
+  48%, 100% { opacity: 0.38; transform: scale(1); }
+}
+
+/* 触发者：.hero.is-playing .wish-drop__ripples ellipse:nth-child(4) → ripple-four var(--dur-hero) 5s ease-out，四层续扩。 */
+
+@keyframes ripple-four {
+  0%, 40% { opacity: 0; transform: scale(0.32); }
+  47% { opacity: 0.54; }
+  52%, 100% { opacity: 0.44; transform: scale(1); }
+}
+
+/* 触发者：.hero.is-playing .wish-drop__ripples ellipse:nth-child(5) → ripple-five var(--dur-hero) 5s ease-out，五层近消失。 */
+
+@keyframes ripple-five {
+  0%, 44% { opacity: 0; transform: scale(0.34); }
+  51% { opacity: 0.38; }
+  56%, 100% { opacity: 0.3; transform: scale(1); }
+}
+
+/* 触发者：.hero.is-playing → ripple-six 5s 线性，end target 监听 animationName === "ripple-six"；实际走 var(--dur-hero) ease-out，.wish-drop__ripples ellipse:nth-child(6) 为末层。 */
+
+@keyframes ripple-six {
+  0%, 48% { opacity: 0; transform: scale(0.36); }
+  55% { opacity: 0.3; }
+  60%, 100% { opacity: 0.2; transform: scale(1); }
+}
+
+/* ---- 辅助标注与轨迹 ---- */
+
+/* 触发者：.hero.is-playing .wish-drop__guide → guide-cycle var(--dur-hero) 5s ease，辅助线淡出，与涟漪同步隐藏。 */
+
+@keyframes guide-cycle {
+  0%, 32% { opacity: 0.72; }
+  40%, 100% { opacity: 0; }
+}
+
+/* 触发者：.hero.is-playing .wish-drop__trail-mask → trail-reveal var(--dur-hero) 5s 线性，描边 dashoffset 揭示轨迹。 */
+
+@keyframes trail-reveal {
+  0%, 2% { stroke-dashoffset: 100; }
+  8% { stroke-dashoffset: 92; }
+  14% { stroke-dashoffset: 80; }
+  20% { stroke-dashoffset: 64; }
+  26% { stroke-dashoffset: 44; }
+  32% { stroke-dashoffset: 22; }
+  34%, 40% { stroke-dashoffset: 0; }
+  41%, 100% { stroke-dashoffset: 100; }
+}
+
+/* ---- 滚动入场 ---- */
+
+/* 触发者：.js .reveal.is-revealed → rise-in var(--dur-slow) ease-out，IntersectionObserver 为 .post-row/.featured-post/.section-label 加类后单次入场，见 main.js。 */
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ---- 图纸落墨 ---- */
+
+/* 触发者：.page-header .ripple-art → ink-settle 700ms 线性，页面头涟漪图纸透明度落墨，装饰性入场。 */
+
+@keyframes ink-settle {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ---- 减少动态偏好 ---- */
+
+/* 仅装饰性动效瞬时化：所有 keyframes 与过渡压至 0.01ms，保留 skip-link 功能性位移，见 DESIGN.md §6。 */
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .skip-link,
+  .skip-link::before,
+  .skip-link::after {
+    transition-duration: var(--dur-base) !important;
+  }
+
+  .wish-drop * { animation: none !important; }
+}

@@ -1,0 +1,127 @@
+/* ==========================================================================
+   Code · 组件 / 行内与围栏代码
+   --------------------------------------------------------------------------
+   使命：承载行内 code 与围栏代码块（.code-block 由 render-codeblock.html
+   包裹，顶栏含语言标签与复制按钮，JS 增强时按钮显现）。
+   禁令：禁止直引 --wp-* 原语与 color·mix；禁止硬编码色值；覆盖 chroma
+   默认底色仅引用 --code-bg/--code-bar-bg，圆角走 --radius。
+   关联：见 DESIGN.md §7 “Prose/Code” 与 §7.1 移动端出血与字号收敛；
+   焦点环与键盘可达见 base/reset.css。
+   ========================================================================== */
+
+.chroma { background-color: var(--code-bg); }
+
+/* ---- 行内代码 · 0.15em 内距贴合基线，底色走 --code-bg ---- */
+.prose :not(pre) > code {
+  padding: 0.15em 0.4em; /* RUI豁免: 0.15em/0.4em 行内光学内距，非间距刻度 */
+  background: var(--code-bg);
+  font-family: var(--font-functional);
+  font-size: var(--text-sm);
+}
+
+/* ---- 代码块容器 · 1.8em 外距与 prose 段距呼应，边框走 --border-default ---- */
+.code-block {
+  margin: 1.8em 0; /* RUI豁免: 1.8em 与 prose 1.4rem 节奏对齐，非固定间距 */
+  border: 1px solid var(--border-default);
+  background: var(--code-bg);
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* ---- 顶栏 · sticky 语言标签与复制按钮，背景 --code-bar-bg ---- */
+.code-block__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: var(--border-width) solid var(--border-default);
+  background: var(--code-bar-bg);
+  position: sticky;
+  left: 0;
+}
+
+.code-block__lang {
+  color: var(--text-meta);
+  font: var(--text-xs)/1.4 var(--font-functional);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.code-block__lang:empty { display: none; }
+
+/* ---- 复制按钮 · 无 JS 时隐藏，hover 走 --accent-wash ---- */
+.code-block__copy {
+  display: none;
+  padding: var(--space-2) var(--space-3);
+  margin: calc(-1 * var(--space-1)) calc(-1 * var(--space-2)) calc(-1 * var(--space-1)) 0;
+  min-height: var(--tap-min);
+  min-width: var(--tap-min);
+  border: 0;
+  border-radius: var(--radius);
+  background: none;
+  color: var(--text-meta);
+  font: var(--text-xs)/1.4 var(--font-functional);
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+}
+
+.js .code-block__copy { display: inline-flex; align-items: center; justify-content: center; }
+
+.code-block__copy:hover,
+.code-block__copy:focus-visible { color: var(--accent); background: var(--accent-wash); }
+
+.code-block__copy.is-copied { color: var(--accent-strong); }
+
+.code-block__copy:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 1px; }
+
+/* ---- 代码主体 · 横向滚动可达，tab 2，行高 1.7 ---- */
+.code-block pre {
+  margin: 0;
+  padding: var(--space-4) var(--space-5);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  border: 0;
+  background: transparent;
+  font: var(--text-sm)/1.7 var(--font-functional);
+  tab-size: 2;
+}
+
+/* 横向滚动区域键盘可达：配合 render-codeblock 的 tabindex="0" 提供可见焦点 */
+.code-block pre:focus-visible,
+.prose > pre:focus-visible,
+.prose :not(.code-block) > .highlight > pre:focus-visible {
+  outline: var(--border-width-thick) solid var(--focus-ring-color);
+  outline-offset: calc(-1 * var(--border-width-thick));
+}
+
+/* ---- 兜底裸 pre · 未经 hook 包裹的手写 HTML，补齐边框与底色 ---- */
+.prose > pre,
+.prose :not(.code-block) > .highlight > pre {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  margin: 1.8em 0; /* RUI豁免: 同 prose 段距节奏 */
+  padding: var(--space-5);
+  background: var(--code-bg);
+  border: var(--border-width) solid var(--border-default);
+  font: var(--text-sm)/1.7 var(--font-functional);
+  max-width: 100%;
+}
+
+@media (max-width: 720px) {
+  .code-block { margin: 0.7rem calc(-1 * var(--shell-gutter)); width: calc(100% + var(--shell-gutter) * 2); border-left: 0; border-right: 0; box-sizing: border-box; }
+
+  .prose > pre,
+  .prose :not(.code-block) > .highlight > pre { margin: 0.7rem calc(-1 * var(--shell-gutter)); width: calc(100% + var(--shell-gutter) * 2); border-left: 0; border-right: 0; padding: var(--space-3) var(--shell-gutter); box-sizing: border-box; }
+
+  .code-block pre { padding: var(--space-2) var(--shell-gutter); font-size: var(--text-xs); line-height: var(--leading-loose); }
+
+  .code-block__bar { padding: var(--space-1) var(--shell-gutter); }
+
+  .code-block__lang { font-size: var(--text-xs); }
+
+  .prose :not(pre) > code { font-size: var(--text-sm); overflow-wrap: anywhere; word-break: break-word; }
+}

@@ -1,0 +1,29 @@
+# Hugo 产物 — 永不入仓，本地按需生成
+/public/
+/resources/
+/_gen/
+.hugo_build.lock
+resources/_gen/
+# 主题示例站点产物（新旧路径兼容，避免重命名后泄漏）
+themes/**/public/
+themes/**/resources/
+themes/**/_gen/
+themes/**/.hugo_build.lock
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
+# 依赖 — 本地按需安装，永不入仓
+node_modules/
+# 编辑器与系统文件
+*.tmp
+*.bak
+# 本地审计报告 — CodeGraph/全量复检按需生成，不入仓
+/audit-*.md
+/local-audit-*.md
+/local/
+.codegraph/

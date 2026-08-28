@@ -1,0 +1,14 @@
+* text=auto eol=lf
+*.css text diff=css
+*.js text diff=javascript
+*.html text diff=html
+*.md text diff=markdown
+*.toml text
+*.svg text diff
+*.json text
+ linguist-language=JSON
+*.woff2 binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary

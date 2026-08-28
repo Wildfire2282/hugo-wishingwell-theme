@@ -1,0 +1,256 @@
+/* ==========================================================================
+   Prose · 组件 / 正文排版
+   --------------------------------------------------------------------------
+   使命：宋体长文容器，节奏分明、标题递减、段落适中；行高 1.9 段距 1rem，
+   链接以井水蓝下划线由淡至实，引用以「 起头点睛。
+   禁令：禁止直引 --wp-* 原语与 color·mix；禁止硬编码色值；标题字阶仅
+   走 --step/--text- RUI，em 仅限光学微调；涟漪纹 data-uri 豁免。
+   关联：见 DESIGN.md §7 “Prose” 与 §7.1 移动端字号/行高收敛；量度以
+   --measure 约束，标题锚点含 scroll-margin。
+   ========================================================================== */
+
+/* ---- 正文容器 · 17–18.5px 流式字阶，1.9 行高，量度由父级 720px 控制，中文两端对齐 ---- */
+.prose {
+  max-width: var(--measure);
+  font-size: clamp(17px, 1.0625rem + 0.22vw, 18.5px);
+  line-height: 1.9;
+  text-align: justify;
+  /* stylelint-disable-next-line declaration-property-value-no-unknown -- inter-ideograph 为中文两端对齐合法值，stylelint 误报 */
+  text-justify: inter-ideograph;
+  hanging-punctuation: allow-end;
+  overflow-wrap: break-word; /* 长 URL/英文超量度时换行，避免被 body overflow-x:clip 裁剪 */
+}
+.prose > :first-child { margin-top: 0; }
+
+/* ---- 首字下沉 · 可选装饰，60px 衬线起头，随 --text-6xl；中文慎用，两字词易切断，默认关闭 ---- */
+.prose--drop-cap > p:first-child::first-letter {
+  float: left;
+  margin: 0.08em 0.16em 0 0; /* 贴合字形光学间距，em 为 measure 例外（RUI: 仅 type scale 禁 em） */
+  color: var(--accent);
+  font-family: var(--font-functional);
+  font-size: var(--text-6xl);
+  font-weight: var(--weight-normal);
+  line-height: 0.82;
+}
+
+/* ---- 标题 · 递减字阶，锚点预留 --header-h + 16px ---- */
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  font-family: var(--font-title);
+  font-weight: var(--weight-bold);
+  scroll-margin-top: calc(var(--header-h) + var(--space-4));
+}
+
+.prose h2 {
+  margin: 1.75rem 0 0.5rem;
+  font-size: var(--step-4);
+  line-height: var(--leading-snug);
+  letter-spacing: -0.03em;
+}
+
+.prose h3 {
+  margin: 1.25rem 0 0.4rem;
+  font-size: var(--step-2);
+  line-height: var(--leading-normal);
+}
+
+.prose h4 {
+  margin: 1rem 0 0.35rem;
+  font-size: var(--step-1);
+  line-height: var(--leading-normal);
+}
+
+.prose h5,
+.prose h6 {
+  margin: 1rem 0 0.3rem;
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+/* ---- 段落与列表 · 段距 1rem，项距 0.5rem ---- */
+.prose p,
+.prose ul,
+.prose ol,
+.prose blockquote { margin: 1rem 0; }
+
+.prose li + li { margin-top: 0.5rem; }
+
+/* ---- 链接 · 井水蓝下划线由淡至实，hover 加深 ---- */
+.prose a {
+  color: var(--accent);
+  overflow-wrap: anywhere; /* 长链接桌面亦换行，与移动端一致，防 640px 撑破 */
+  text-decoration-thickness: var(--border-width);
+  text-underline-offset: 3px; /* RUI豁免: 3px 下划线偏移，非间距 */
+  text-decoration-color: var(--accent-line);
+  transition: color var(--dur-fast) var(--ease-out),
+    text-decoration-color var(--dur-fast) var(--ease-out);
+}
+.prose a:hover,
+.prose a:focus-visible {
+  color: var(--accent-strong);
+  text-decoration-color: var(--accent-strong);
+}
+
+/* ---- 引用 · 左侧 2px 竖线 + “ 起头，衬底 --accent-wash ---- */
+.prose blockquote {
+  position: relative;
+  margin-inline: 0;
+  padding: var(--space-2) var(--space-4) var(--space-2) var(--space-5);
+  border-left: var(--border-width-thick) solid var(--accent);
+  background: var(--accent-wash);
+  color: var(--text-secondary);
+  font-weight: var(--weight-normal);
+}
+
+.prose blockquote::before {
+  content: "“";
+  position: absolute;
+  left: var(--space-5);
+  top: -0.62em;
+  font-family: var(--font-body);
+  font-size: var(--text-2xl);
+  line-height: var(--leading-tight);
+  color: var(--accent);
+  opacity: var(--opacity-4);
+  pointer-events: none;
+}
+
+/* ---- 图片与图注 · 图注 mono 12px 居中，图框以 --border-default ---- */
+.prose img {
+  max-width: 100%;
+  height: auto;
+  margin-inline: auto;
+  border: var(--border-width) solid var(--border-default);
+  display: block;
+}
+
+.prose figure { margin: 1.4rem 0; max-width: 100%; overflow: hidden; }
+
+.prose figcaption {
+  margin-top: var(--space-2);
+  text-align: center;
+  color: var(--text-meta);
+  font: var(--text-xs)/1.6 var(--font-functional);
+  letter-spacing: 0.04em;
+}
+
+/* ---- 表格 · 横向滚动容器配左右淡入阴影，键盘焦点可见 ---- */
+.table-scroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  background:
+    linear-gradient(to right, var(--paper) 30%, transparent) left / var(--space-5) 100% no-repeat,
+    linear-gradient(to left, var(--paper) 30%, transparent) right / var(--space-5) 100% no-repeat,
+    linear-gradient(to right, var(--scroll-fade), transparent) left / var(--space-2) 100% no-repeat,
+    linear-gradient(to left, var(--scroll-fade), transparent) right / var(--space-2) 100% no-repeat;
+  background-attachment: local, local, scroll, scroll;
+  border: var(--border-width) solid transparent;
+  border-radius: 0;
+}
+
+.table-scroll:focus-visible {
+  outline: var(--border-width-thick) solid var(--focus-ring-color);
+  outline-offset: calc(-1 * var(--border-width-thick));
+}
+
+.prose table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-functional);
+  font-size: var(--text-sm);
+}
+
+.prose th,
+.prose td {
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-width) solid var(--border-default);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.prose td { white-space: normal; overflow-wrap: anywhere; }
+
+.prose th {
+  background: var(--code-bg);
+  font-weight: var(--weight-normal);
+}
+
+.prose tbody tr:nth-child(even) {
+  background: var(--code-row-alt);
+}
+
+/* ---- 代码块微调 · 与 prose 段距对齐 ---- */
+.prose .code-block,
+.prose > pre { margin: 1.4rem 0; max-width: 100%; overflow-wrap: normal; }
+
+/* ---- 分隔线 · 120×24 涟漪纹，桌面装饰性，移动端退化为实线 ---- */
+/* data-uri 色值取自调色板 --wp-paper-400 (#b5b8b5) 描边 / --accent (#315c7c) 圆点，无法引用变量，例外豁免 */
+/* 暗色下沿用同款纹理，深浅由纸面与 --border-default 对比自然区分，不单独覆写 data-uri；移动端已退化为 --border-default 实线，避免暗色对比失效 */
+.prose hr {
+  margin: 1.8rem auto;
+  border: 0;
+  width: 120px; /* RUI豁免: 120px 涟漪纹理画布，非间距刻度 */
+  height: 24px; /* RUI豁免: 24px 画布高度，刻度内但属装饰 */
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 24'%3E%3Ccircle cx='60' cy='12' r='7' fill='none' stroke='%23b5b8b5'/%3E%3Ccircle cx='60' cy='12' r='11' fill='none' stroke='%23b5b8b5' stroke-dasharray='4 5'/%3E%3Ccircle cx='60' cy='12' r='2.2' fill='%23315c7c'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+@media (max-width: 720px) {
+  .prose {
+    font-size: var(--text-base);
+    line-height: var(--leading-loose);
+    hyphens: auto;
+  }
+
+  .prose--drop-cap > p:first-child::first-letter { display: none; }
+
+  .prose h2 { font-size: var(--text-xl); margin: 1rem 0 0.3rem; line-height: var(--leading-snug); letter-spacing: -0.02em; }
+
+  .prose h3 { margin: 0.9rem 0 0.25rem; font-size: var(--text-lg); line-height: var(--leading-snug); }
+
+  .prose h4 { margin: 0.8rem 0 0.2rem; font-size: var(--text-base); }
+
+  .prose p,
+  .prose ul,
+  .prose ol,
+  .prose blockquote { margin: 0.7rem 0; }
+
+  .prose li + li { margin-top: 0.25rem; }
+
+  .prose blockquote { padding: var(--space-2) var(--space-3); border-left-width: var(--border-width-thick); font-size: var(--text-sm); line-height: var(--leading-loose); background: var(--accent-wash); }
+
+  .prose blockquote::before { display: none; }
+
+  .prose hr { margin: 1rem auto; width: var(--space-8); height: var(--border-width); background: var(--border-default); border-radius: var(--radius-pill); }
+
+  .prose a { overflow-wrap: anywhere; }
+
+  .prose figcaption { margin-top: var(--space-1); font-size: var(--text-xs); line-height: var(--leading-normal); }
+
+  .prose figure { margin: 0.9rem 0; }
+
+  .prose img { border-width: var(--border-width); }
+
+  .table-scroll {
+    margin-inline: calc(-1 * var(--shell-gutter));
+    padding-inline: var(--shell-gutter);
+    width: calc(100% + var(--shell-gutter) * 2);
+    max-width: none;
+    border-left: 0;
+    border-right: 0;
+    box-sizing: border-box;
+  }
+
+  .prose table { font-size: var(--text-xs); }
+
+  .prose th,
+  .prose td { padding: var(--space-2) var(--space-2); }
+
+  .prose .code-block,
+  .prose > pre { margin: 0.9rem 0; }
+}

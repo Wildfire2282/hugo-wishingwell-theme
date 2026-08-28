@@ -1,0 +1,75 @@
+/* ==========================================================================
+   Print · 工具层 / 打印去装饰
+   --------------------------------------------------------------------------
+   使命：面向阅读与存档的打印场景，隐藏导航、进度、目录、涟漪等界面
+   构件，收紧配色为纸张白底黑字并展开外链地址以保可回溯；
+   禁令：禁止引入主题纸墨与阴影 token，禁止保留装饰性背景与交互；
+   豁免：纸张色 #fff/#000/#ccc 为打印硬编码，非语义派生，豁免 token
+   审查；关联：见 DESIGN.md §7 装饰裁剪与 ENGINEERING.md §5 管线。
+   ========================================================================== */
+
+@media print {
+  /* ---- 界面去装饰 ---- */
+
+  /* 非内容构件一律不打印，避免纸张浪费与背景墨耗，见 DESIGN.md §7.1。 */
+
+  .site-header,
+  .reading-progress,
+  .back-to-top,
+  .toc,
+  .article-tags,
+  .related,
+  .site-footer nav,
+  .hero__nav,
+  .wish-drop,
+  .ripple-art,
+  .skip-link,
+  .code-block__copy { display: none !important; }
+
+  /* ---- 纸墨收敛 ---- */
+
+  /* 强制白底黑字，字阶以 pt 保证打印物理尺寸一致，无视 --paper 深浅。 */
+
+  body {
+    background: #fff; /* 豁免: 打印纸张白底，非 --paper */
+    color: #000; /* 豁免: 打印墨色，非 --text-primary */
+    font-size: 12pt; /* RUI豁免: pt 为打印物理单位，非屏幕字阶 */
+  }
+
+  .page-shell,
+  .article-layout {
+    display: block;
+    width: auto;
+  }
+
+  .article-header h1,
+  .hero h1,
+  .page-header h1 {
+    font-size: 22pt; /* RUI豁免: pt 打印标题，非 --text-* */
+  }
+
+  /* ---- 链接可回溯 ---- */
+
+  /* 正文链接加下划线并展开 http 外链地址，确保纸面可追溯。 */
+
+  .prose a {
+    color: #000; /* 豁免: 打印墨色，同上 */
+    text-decoration: underline;
+  }
+
+  .prose a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 9pt; /* RUI豁免: pt 打印注记 */
+    word-break: break-all;
+  }
+
+  /* ---- 代码块可读性 ---- */
+
+  /* 代码块以 1px 实线围合替代阴影，换行保留可读。 */
+
+  .code-block,
+  .prose pre {
+    border: 1px solid #ccc; /* 豁免: 打印灰阶，非 --border-default */
+    white-space: pre-wrap;
+  }
+}

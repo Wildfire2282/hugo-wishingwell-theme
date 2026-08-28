@@ -1,0 +1,153 @@
+/* ==========================================================================
+   原始刻度层 · Tokens / Primitives —— 唯一可信的原子刻度
+   --------------------------------------------------------------------------
+   使命：定义未经语义化的原始刻度（色板 ramp、字体栈、字号、间距、
+   动效、层级与阴影），为语义层提供 ΔE＝0 的 hsl 双写输入；输入：
+   无，仅依 DESIGN.md §4 原始色板与 RUI 刻度；禁令：禁止组件直引
+   --wp-* 色板、禁止新增裸 hex、禁止运行时 color-mix 现调 tint；
+   语义派生一律先入 ramp 再经 semantic.css 封装；关联：见
+   themes/hugo-wishingwell-theme/docs/DESIGN.md §4—§4.5。
+   ========================================================================== */
+
+:root {
+  /* ---- 色彩 · 纸 — 暖灰纸面承载正文，f7f7f4 为底起 45em measure ---- */
+  /* 纸 ramp 预留 25／200 供未来微差与暗色纸面扩展，当前仅映射 0／50／125／300／500 三级对比。 */
+  --wp-paper-0: hsl(0, 0%, 100%) /* #ffffff。 */;
+  --wp-paper-25: hsl(60, 20%, 98%) /* #fbfbf9。 */;
+  --wp-paper-50: hsl(60, 16%, 96%) /* #f7f7f4。 */;
+  --wp-paper-100: hsl(60, 15%, 94%) /* #f1f1ec。 */;
+  --wp-paper-125: hsl(80, 9%, 94%) /* #eff0ed。 */;
+  --wp-paper-200: hsl(60, 12%, 90%) /* #e8e8e2。 */;
+  --wp-paper-300: hsl(70, 9%, 86%) /* #dedfd9。 */;
+  --wp-paper-400: hsl(120, 2%, 72%) /* #b5b8b5。 */;
+  --wp-paper-500: hsl(206, 3%, 60%) /* #969a9d。 */;
+
+  /* ---- 色彩 · 墨 — 标题与正文的层次靠墨深浅表达，非靠字号 ---- */
+  /* 墨阶 800／700／600／400 为预留，语义层当前仅取 900／500／450 三级纸墨对比，其余供暗色与强调扩展。 */
+  --wp-ink-900: hsl(200, 6%, 10%) /* #181a1b。 */;
+  --wp-ink-800: hsl(204, 5%, 18%) /* #2c2f31。 */;
+  --wp-ink-700: hsl(204, 5%, 24%) /* #3d4042。 */;
+  --wp-ink-600: hsl(204, 4%, 33%) /* #52565a。 */;
+  --wp-ink-500: hsl(204, 4%, 42%) /* #686b6d。 */;
+  --wp-ink-450: hsl(206, 3%, 41%) /* #62676a。 */;
+  --wp-ink-400: hsl(206, 3%, 51%) /* #7d8184。 */;
+
+  /* ---- 色彩 · 井水蓝 — 全站唯一强调色，点睛而非铺底 ---- */
+  /* 井水蓝 ramp 预留 050／300／400 供 hover 渐变与浅衬底细化，当前语义层映射 500／600／700／200／100。 */
+  --wp-well-050: hsl(204, 37%, 92%) /* #eef4f8。 */;
+  --wp-well-100: hsl(204, 45%, 92%) /* #e3ecf2。 */;
+  --wp-well-200: hsl(203, 33%, 85%) /* #cbdbe5。 */;
+  --wp-well-300: hsl(204, 30%, 70%) /* #9db8ca。 */;
+  --wp-well-400: hsl(204, 29%, 55%) /* #6b93ae。 */;
+  --wp-well-500: hsl(206, 43%, 34%) /* #315c7c。 */;
+  --wp-well-600: hsl(206, 43%, 28%) /* #27495f。 */;
+  --wp-well-700: hsl(204, 43%, 21%) /* #1e394b。 */;
+
+  /* ---- 字体栈 — 三类：标题黑体 / 正文系统默认 / 功能宋体 ---- */
+  --font-title: "PingFang SC", "Heiti SC", "Microsoft YaHei", "Noto Sans CJK SC", "Helvetica Neue", Arial, sans-serif /* 标题黑体：承担标题层级，黑体醒目 */ ;
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif /* 正文系统默认：Win Segoe/macOS San Francisco，承担连续阅读 */ ;
+  --font-functional: ui-serif, Georgia, "Noto Serif CJK SC", "Source Han Serif SC", "Songti SC", SimSun, serif /* 功能宋体：承担按钮/导航/代码等结构 */ ;
+
+  /* ---- 字重 — 仅标题用 bold，其余一律 normal，同正文 ---- */
+  --weight-normal: 400 /* 正文与全部非标题：400，与正文一致 */;
+  --weight-bold: 600 /* 仅标题：h1~h6/展示标题，替代700 */;
+
+  /* ---- 字号 — 固定 RUI 锚点，px／rem only 禁止 em ---- */
+  /* 固定锚点为唯一合法字号表，新增字号先查表，禁止随手写 px。 */
+  --text-xs: 12px /* RUI 12：mono 元数据与标签最小字。 */;
+  --text-sm: 14px /* RUI 14：摘要与说明文字。 */;
+  --text-base: 16px /* RUI 16：正文基准，clamp 起点。 */;
+  --text-lg: 18px /* RUI 18：prose 移动端正文与引言。 */;
+  --text-xl: 20px /* RUI 20：卡片标题与小展示。 */;
+  --text-2xl: 24px /* RUI 24：h3 与区块标题。 */;
+  --text-3xl: 30px /* RUI 30：h2 与展示中间阶。 */;
+  --text-4xl: 36px /* RUI 36：h1 与展示阈值。 */;
+  --text-5xl: 48px /* RUI 48：display-article 封顶，对应 68→48 收敛。 */;
+  --text-6xl: 60px /* RUI 60：display-page／error 封顶，对应 80→60 收敛。 */;
+  --text-7xl: 72px /* RUI 72：display-hero 封顶，对应 92→72 收敛。 */;
+
+  /* ---- 流式字号 — 仅为便利别名，端点 snap 到 RUI ---- */
+  /* 流式 cover 12→36，日常正文取 --step-0～--step-3，--step-5 预留大数字展示。 */
+  --step--1: clamp(0.75rem, 0.71rem + 0.2vw, 0.875rem) /* 12→14：mono 最小流动。 */;
+  --step-0: clamp(0.875rem, 0.84rem + 0.18vw, 1rem) /* 14→16：正文字号流动。 */;
+  --step-1: clamp(1rem, 0.96rem + 0.2vw, 1.125rem) /* 16→18：引言与摘要流动。 */;
+  --step-2: clamp(1.125rem, 1.08rem + 0.24vw, 1.25rem) /* 18→20：卡片标题流动。 */;
+  --step-3: clamp(1.25rem, 1.18rem + 0.35vw, 1.5rem) /* 20→24：h3 流动。 */;
+  --step-4: clamp(1.5rem, 1.38rem + 0.55vw, 1.875rem) /* 24→30：h2 流动。 */;
+  --step-5: clamp(1.875rem, 1.72rem + 0.78vw, 2.25rem) /* 30→36：h1 流动，封顶 36。 */;
+
+  /* ---- 展示级标题 — display 字体专用，clamp 封顶防溢 ---- */
+  --display-hero: clamp(48px, 6vw, 72px) /* alias: was 92→72；Hero 隶书封顶 72，避免超宽溢出。 */;
+  --display-page: clamp(36px, 5vw, 60px) /* alias: was 80→60；列表页头封顶 60。 */;
+  --display-article: clamp(30px, 4.5vw, 48px) /* alias: was 68→48；文章题封顶 48，移动端 34 紧凑。 */;
+  --display-error: clamp(36px, 5vw, 60px) /* alias: was 78→60；404 封顶 60，与 page 对齐。 */;
+
+  /* ---- 间距 — RUI 4，8，12，16，24，32，48，64，96，128，192，256；邻比≥25% ---- */
+  --space-1: 4px /* RUI 4：最小缝隙与描边补偿。 */;
+  --space-2: 8px /* RUI 8：紧凑内距与图标间隙。 */;
+  --space-3: 12px /* RUI 12：mono 标签与小组件间隙。 */;
+  --space-4: 16px /* RUI 16：shell-gutter 最小值与卡片内距。 */;
+  --space-5: 24px /* RUI 24：段落与卡片中等间距；was 20→24。 */;
+  --space-6: 32px /* RUI 32：网格 gap 与内容分区；was 24→32。 */;
+  --space-7: 48px /* RUI 48：区块外距；was 28→48，邻比 50%。 */;
+  --space-8: 64px /* RUI 64：shell-gutter 最大值与宽分区；was 32→64。 */;
+  --space-9: 96px /* RUI 96：大区块分隔；was 36→96。 */;
+  --space-10: 128px /* RUI 128：页面级留白；was 40→128。 */;
+  --space-11: 192px /* RUI 192：超大留白预留；was 44→192。 */;
+  --space-12: 256px /* RUI 256：最大留白预留；was 48→256。 */;
+
+
+  /* ---- 边框宽度 — RUI 固定宽度，不随字号缩放 ---- */
+  --border-width: 1px /* RUI 1px：装饰性分隔，豁免 WCAG 1.4.11。 */;
+  --border-width-thick: 2px /* RUI 2px：控件与结构性强分隔，满足 3:1 识别。 */;
+
+  /* ---- 不透明度 — RUI 固定档位，替代随手滑块 ---- */
+  --opacity-1: 0.05 /* RUI .05：极淡叠加。 */;
+  --opacity-2: 0.1 /* RUI .1：wash 与 line 基础。 */;
+  --opacity-3: 0.2 /* RUI .2：强调线与遮罩起点。 */;
+  --opacity-4: 0.4 /* RUI .4：中等遮罩。 */;
+  --opacity-5: 0.6 /* RUI .6：强遮罩。 */;
+  --opacity-6: 0.8 /* RUI .8：近实色覆盖。 */;
+
+  /* ---- 行高 — RUI 反比于字号，正比于行长 ---- */
+  --leading-tight: 1 /* RUI 1：≥36px 标题紧凑，避免松散。 */;
+  --leading-snug: 1.25 /* RUI 1.25：20—30px 标题与 UI 行。 */;
+  --leading-normal: 1.5 /* RUI 1.5：正文窄量度基准。 */;
+  --leading-loose: 1.75 /* RUI 1.75：小字与宽栏舒适行距。 */;
+
+  /* ---- 动效 — RUI 时长与缓动固定档位 ---- */
+  --dur-fast: 150ms /* RUI 150：颜色与边框即时反馈。 */;
+  --dur-base: 250ms /* RUI 250：位移与生长类变换。 */;
+  --dur-slow: 450ms /* RUI 450：区块级慢回应，section-label 短线专用。 */;
+  --dur-ink: 700ms /* 涟漪落墨：page-header ink-settle 700ms 线性，仅装饰落墨。 */;
+  --dur-hero: 5000ms /* RUI 5000：投币编排专用，不得挪用。 */;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1) /* RUI ease-out：入场与反馈默认。 */;
+
+  /* ---- 阴影 — 5 阶克制抬升，按 z 轴选非按审美 ---- */
+  --shadow-1: 0 1px 3px hsl(0 0% 0% / 0.2) /* RUI 1px3：header.is-scrolled 与按钮。 */;
+  --shadow-2: 0 4px 6px hsl(0 0% 0% / 0.2) /* RUI 4px6：下拉与悬浮卡片。 */;
+  --shadow-3: 0 5px 15px hsl(0 0% 0% / 0.2) /* RUI 5px15：中等浮层。 */;
+  --shadow-4: 0 10px 24px hsl(0 0% 0% / 0.2) /* RUI 10px24：大浮层。 */;
+  --shadow-5: 0 15px 35px hsl(0 0% 0% / 0.2) /* RUI 15px35：模态与最高抬升。 */;
+
+  /* ---- 形状 — RUI 中性圆角 ---- */
+  --radius: 4px /* RUI 4：仅用于控件（代码复制按钮），全站无大圆角。 */;
+  --radius-pill: 999px /* RUI 胶囊：标签与徽标，恒定。 */;
+
+  /* ---- 层级 — 按出现顺序递增，避免 z-index 竞赛 ---- */
+  --z-backtotop: 60 /* 返回顶部浮钮。 */;
+  --z-header: 90 /* 吸顶头部与导航。 */;
+  --z-progress: 100 /* 顶部阅读进度条。 */;
+  --z-skip: 200 /* 跳过导航链接，最高可达性层。 */;
+
+  /* ---- 纹理 — 噪点纸感 ---- */
+  --texture-noise: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.32'/%3E%3C/svg%3E") /* 豁免：data-uri 噪点纹理，opacity .32 固定纸感，无法引用变量。 */;
+}
+
+/* 移动端：全部字族收敛至系统默认 */
+@media (max-width: 720px) {
+  :root {
+    --font-title: var(--font-body);
+    --font-functional: var(--font-body);
+  }
+}

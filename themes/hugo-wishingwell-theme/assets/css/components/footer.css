@@ -1,0 +1,71 @@
+/* ==========================================================================
+   Footer · 组件 / 站点页脚
+   --------------------------------------------------------------------------
+   使命：单行页脚，左侧版权、右侧必要链接；导航不与页头重复，品牌信息
+   不与 Hero 重复，以 --border-default 顶线收束。
+   禁令：禁止直引 --wp-* 原语与 color·mix；禁止硬编码色值；链接下划线
+   厚度走 --border-width，偏移走 RUI 刻度。
+   关联：见 DESIGN.md §7 “Footer” 与 §7.1 移动端纵向堆叠与触控；安全区
+   以 env(safe-area-inset-bottom) 兜底。
+   ========================================================================== */
+
+/* ---- 容器 · 顶线以 --border-default，分隔正文与页脚 ---- */
+.site-footer {
+  border-top: var(--border-width) solid var(--border-default);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ---- 版心 · 10 × 4 间隙，mono 12px 弱化色 ---- */
+.site-footer__inner {
+  min-height: var(--space-10);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+}
+
+/* ---- 导航 · 横向 5 间隙，允许换行 ---- */
+.site-footer nav {
+  display: flex;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+}
+
+/* ---- 链接 · 下划线由 --border-default 至 --accent 过渡 ---- */
+.site-footer a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--space-6);
+  text-decoration: underline;
+  text-decoration-color: var(--border-default);
+  text-decoration-thickness: var(--border-width);
+  text-underline-offset: var(--space-1);
+  transition: color var(--dur-fast) var(--ease-out),
+    text-decoration-color var(--dur-fast) var(--ease-out);
+}
+
+.site-footer a:hover,
+.site-footer a:focus-visible {
+  color: var(--accent);
+  text-decoration-color: var(--accent);
+}
+
+@media (max-width: 720px) {
+  .site-footer__inner {
+    min-height: 0;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding-block: var(--space-3);
+    font-size: var(--text-xs);
+    line-height: var(--leading-normal);
+    flex-wrap: nowrap;
+  }
+
+  .site-footer nav { gap: var(--space-3); }
+
+  .site-footer a { min-height: var(--tap-min); text-underline-offset: 3px; } /* RUI豁免: 3px 下划线偏移，非间距 */
+}

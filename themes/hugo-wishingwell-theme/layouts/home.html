@@ -1,0 +1,52 @@
+{{ define "main" }}
+  <div class="page-shell home">
+    <section class="hero" aria-labelledby="hero-title">
+      {{ partial "wish-drop.html" . }}
+      <div class="hero__content">
+        <p class="hero__eyebrow">GENERATIVE WISHING WELL <span aria-hidden="true">/ 001</span></p>
+        <h1 id="hero-title">{{ site.Title }}</h1>
+        <p class="hero__tagline">{{ site.Params.tagline }}</p>
+        <nav class="hero__nav" aria-label="主导航">
+          {{ range site.Menus.main }}
+            <a href="{{ .URL }}">{{ .Name }}</a>
+          {{ end }}
+        </nav>
+      </div>
+    </section>
+
+    {{ $posts := where site.RegularPages "Section" "posts" }}
+    {{ $featured := first 1 ((where $posts "Params.featured" true).ByDate.Reverse) }}
+    {{ $hasFeatured := gt (len $featured) 0 }}
+    {{ range $featured }}
+      <section class="featured" aria-labelledby="featured-title">
+        <div class="section-label"><h2 id="featured-title">精选</h2><span aria-hidden="true">01</span></div>
+        <article class="featured-post">
+          <div class="featured-post__body">
+            <h3><a href="{{ .RelPermalink }}">{{ .Title }}</a></h3>
+            <p>{{ .Description | default .Summary }}</p>
+          </div>
+          <div class="featured-post__meta">
+            {{ with index (.GetTerms "topics") 0 }}<a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a>{{ end }}
+            <span>{{ .ReadingTime }} 分钟阅读</span>
+          </div>
+        </article>
+      </section>
+    {{ end }}
+
+    <section class="latest" aria-labelledby="latest-title">
+      <div class="section-label"><h2 id="latest-title">{{ if $hasFeatured }}更多文章{{ else }}最新文章{{ end }}</h2><span aria-hidden="true">{{ if $hasFeatured }}02{{ else }}01{{ end }}</span></div>
+      <div class="post-list">
+        {{ $latest := $posts.ByDate.Reverse }}
+        {{ range $featured }}{{ $latest = $latest | complement (slice .) }}{{ end }}
+        {{ if $latest }}
+          {{ range first 5 $latest }}
+            {{ partial "post-row.html" (dict "page" . "headingLevel" 3) }}
+          {{ end }}
+        {{ else }}
+          <p class="empty-state">还没有投入井中的记录。</p>
+        {{ end }}
+      </div>
+      <a class="text-link" href="{{ "posts/" | relURL }}">查看全部文章 <span aria-hidden="true">→</span></a>
+    </section>
+  </div>
+{{ end }}

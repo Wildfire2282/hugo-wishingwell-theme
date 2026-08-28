@@ -1,0 +1,86 @@
+/* ==========================================================================
+   Archive · 组件 / 归档时间线
+   --------------------------------------------------------------------------
+   使命：按年分组、按月分栏的时间沉淀结构；年标题配篇数，月标题 mono
+   小字，条目以双栏存版心。
+   禁令：禁止直引 --wp-* 原语与 color·mix；禁止硬编码色值；栅格固定列
+   宽 100px/48px 为布局豁免，其余间距走 RUI 刻度。
+   关联：见 DESIGN.md §7 “Archive” 与 §7.1 移动端年/月收敛；列表数据由
+   Hugo 归档模板渲染。
+   ========================================================================== */
+
+/* ---- 年区块 · 上下以 --border-strong 分隔，首年多留 --space-10 ---- */
+.archive-year {
+  padding: var(--space-7) 0 var(--space-3);
+  border-bottom: var(--border-width) solid var(--border-strong);
+}
+
+.archive-year:first-of-type { padding-top: var(--space-10); }
+
+.archive-year > h2 {
+  margin: 0 0 var(--space-10);
+  font-size: var(--text-4xl);
+  letter-spacing: -0.04em;
+}
+
+.archive-year > h2 small {
+  margin-left: var(--space-3);
+  color: var(--text-meta);
+  font: var(--text-xs) var(--font-functional);
+}
+
+/* ---- 月区块 · 左 100px mono 月名，右 1fr 条目流 ---- */
+.archive-month {
+  display: grid;
+  grid-template-columns: 100px 1fr; /* RUI豁免: 100px 固定月栏，非间距 */
+  margin-bottom: var(--space-9);
+}
+
+.archive-month h3 {
+  margin: var(--space-1) 0 0;
+  color: var(--text-secondary);
+  font: var(--text-xs) var(--font-functional);
+}
+
+/* ---- 条目 · 左 48px 时分，右 1fr 标题，底线以 --border-default ---- */
+.archive-month a {
+  display: grid;
+  grid-template-columns: 48px 1fr; /* RUI豁免: 48px 时分列宽，刻度内但属固定布局 */
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: var(--border-width) solid var(--border-default);
+}
+
+.archive-month a span { transition: color var(--dur-fast) var(--ease-out); }
+
+.archive-month a:hover span,
+.archive-month a:focus-visible span {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: var(--space-1);
+}
+
+.archive-month time {
+  color: var(--text-meta);
+  font: var(--text-xs) var(--font-functional);
+}
+
+@media (max-width: 720px) {
+  .archive-year { padding: var(--space-5) 0 var(--space-2); border-bottom-width: var(--border-width); }
+
+  .archive-year:first-of-type { padding-top: var(--space-5); }
+
+  .archive-year > h2 { margin-bottom: var(--space-4); font-size: var(--text-2xl); letter-spacing: -0.03em; }
+
+  .archive-month {
+    grid-template-columns: 1fr;
+    gap: var(--space-1);
+    margin-bottom: var(--space-4);
+  }
+
+  .archive-month h3 { margin: 0; padding-top: var(--space-1); font-size: var(--text-xs); }
+
+  .archive-month a { min-height: var(--tap-min); align-items: center; padding: var(--space-2) 0; gap: var(--space-2); border-bottom-width: var(--border-width); }
+
+  .archive-month a span { font-size: var(--text-sm); line-height: var(--leading-snug); }
+}

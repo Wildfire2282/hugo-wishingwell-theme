@@ -1,0 +1,35 @@
+{{/* ==========================================================================
+   render-table.html · _markup / 表格渲染
+   --------------------------------------------------------------------------
+   包裹表格以支持横向滚动；属性白名单仅放行 id／class／data-*／
+   aria-* 并阻断 on* 事件，避免注入。样式由 prose 表格组件承载。
+   关联：docs/COMMENTS.md §5、assets/css/components/prose.css
+   ========================================================================== */}}
+<div class="table-scroll" tabindex="0" role="region" aria-label="可横向滚动的表格">
+  <table
+    {{- range $key, $value := .Attributes }}
+      {{/* 白名单放行 id／class／data-*／aria-*，阻断 on* 事件；aria-* 显式放行以支持无障碍属性 */}}
+      {{- if and $value (findRE `^(id|class|data-[a-z0-9-]+|aria-[a-z0-9-]+)$` $key) (not (findRE `(?i)^on` $key)) }}
+        {{- printf " %s=%q" $key $value | safeHTMLAttr }}
+      {{- end }}
+    {{- end }}>
+    <thead>
+      {{- range .THead }}
+        <tr>
+          {{- range . }}
+            <th{{ with .Alignment }}{{ printf " style=%q" (printf "text-align: %s" .) | safeHTMLAttr }}{{ end }}>{{ .Text }}</th>
+          {{- end }}
+        </tr>
+      {{- end }}
+    </thead>
+    <tbody>
+      {{- range .TBody }}
+        <tr>
+          {{- range . }}
+            <td{{ with .Alignment }}{{ printf " style=%q" (printf "text-align: %s" .) | safeHTMLAttr }}{{ end }}>{{ .Text }}</td>
+          {{- end }}
+        </tr>
+      {{- end }}
+    </tbody>
+  </table>
+</div>

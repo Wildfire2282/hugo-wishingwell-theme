@@ -1,0 +1,136 @@
+/* ==========================================================================
+   Search · 组件 / 站内搜索
+   --------------------------------------------------------------------------
+   使命：搜索页交互容器，含输入框、状态与结果列表；以 2px 强边框输入区
+   承载即时检索，反馈走 JSON 索引与 JS 防抖。
+   禁令：禁止直引 --wp-* 原语与 color·mix；禁止硬编码色值；厚度与间距
+   均走语义 token，结果项过渡仅走 background/color。
+   关联：见 DESIGN.md §7 “Search” 与 §7.1 移动端输入区压缩；检索逻辑
+   见 assets/js/main.js search 分区。
+   ========================================================================== */
+
+/* ---- 输入区 · 2px --border-strong 底线，focus-within 时 accent 点亮 ---- */
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-12);
+  border-bottom: var(--border-width-thick) solid var(--border-strong);
+  transition: border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.search-box:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 1px 0 var(--accent);
+}
+
+/* ---- 输入框 · 无边框透明底，24px 衬线占主视觉 ---- */
+.search-box input {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  padding: var(--space-4) 0;
+  background: transparent;
+  color: var(--text-primary);
+  font: var(--text-2xl) var(--font-functional);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.search-box input:focus-visible { outline: 0; }
+
+.search-box input::placeholder { color: var(--text-meta); }
+
+.search-box > span:last-child {
+  flex: none;
+  color: var(--text-meta);
+  font: var(--text-xs) var(--font-functional);
+  white-space: nowrap;
+}
+
+/* ---- 状态 · 提示检索中/无结果，弱化色 ---- */
+.search-status {
+  margin: var(--space-6) 0;
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+}
+
+/* ---- 结果列表 · 无项目符号，项间以 --border-default 分隔（由 li 继承） ---- */
+.search-results ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.search-results li { border: 0; }
+
+/* ---- 结果项 · 网格纵排，hover 时 --surface-veil 微亮 ---- */
+.search-result {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-6) 0;
+  transition: background-color var(--dur-base) var(--ease-out);
+  border-radius: 0;
+}
+
+.search-result h2 {
+  margin: 0;
+  font-size: var(--step-2);
+  letter-spacing: -0.02em;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.search-result span {
+  color: var(--text-secondary);
+  font: var(--text-sm)/1.7 var(--font-body);
+}
+
+.search-result small {
+  color: var(--text-meta);
+  font: var(--text-xs) var(--font-functional);
+}
+
+.search-result:hover,
+.search-result:focus-visible { background: var(--surface-veil); }
+
+.search-result:hover h2,
+.search-result:focus-visible h2 {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: var(--space-1);
+}
+
+/* ---- 兜底外链 · 指向外部搜索，保持 accent 下划线语汇 ---- */
+.search-fallback {
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+}
+
+.search-fallback a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: var(--space-1);
+}
+
+@media (max-width: 720px) {
+  .search-box { margin-top: var(--space-4); border-bottom-width: var(--border-width-thick); }
+
+  .search-box input { min-height: var(--tap-min); padding: var(--space-2) 0; font-size: var(--text-lg); line-height: var(--leading-snug); }
+
+  .search-box > span:last-child { font-size: var(--text-xs); }
+
+  .search-status { margin: var(--space-3) 0; font-size: var(--text-xs); }
+
+  .search-result { min-height: var(--tap-min); padding: var(--space-2) 0; gap: var(--space-1); }
+
+  .search-result h2 { font-size: var(--text-sm); line-height: var(--leading-snug); overflow-wrap: anywhere; }
+
+  .search-result span { font-size: var(--text-xs); line-height: var(--leading-normal); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+  .search-result small { font-size: var(--text-xs); }
+}
+
+@media (max-width: 380px) {
+  .search-box input { font-size: var(--text-base); }
+}

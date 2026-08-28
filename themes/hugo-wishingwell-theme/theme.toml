@@ -1,0 +1,14 @@
+name = "hugo-wishingwell-theme"
+version = "1.0.0"
+license = "MIT"
+licenselink = "https://github.com/Wildfire2282/hugo-wishingwell-theme/blob/main/LICENSE"
+description = "A restrained Chinese Hugo theme for technical writing and personal notes — WishingWell edition."
+homepage = "https://github.com/Wildfire2282/hugo-wishingwell-theme"
+tags = ["blog", "minimal", "responsive", "chinese", "accessible"]
+features = ["toc", "search", "related content", "reading progress", "dark mode"]
+min_version = "0.164.0"
+minVersion = "0.164.0"
+
+[author]
+  name = "Wishpond contributors"
+  homepage = "https://github.com/Wildfire2282"

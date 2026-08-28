@@ -1,0 +1,72 @@
+/* ==========================================================================
+   Error & About · 组件 / 404 与关于页
+   --------------------------------------------------------------------------
+   使命：404 页以涟漪图为背景承载大标题与返回链接，关于页以 --measure
+   约束长文，二者共用错误变体涟漪构图。
+   禁令：禁止直引 --wp-* 原语与 color·mix；禁止硬编码色值；画布 420px
+   与量度均以语义或豁免注明。
+   关联：见 DESIGN.md §7 “404” 与 §7.1 移动端装饰裁剪；涟漪图定义见
+   components/page-header.css。
+   ========================================================================== */
+
+/* ---- 404 · 72vh 保底，涟漪图置底作氛围 ---- */
+.error-page {
+  position: relative;
+  min-height: 72vh;
+  padding-block: var(--space-10);
+  overflow: hidden;
+}
+
+.error-page .ripple-art {
+  z-index: -1;
+  width: 420px; /* RUI豁免: 420px 叙事画布，非间距 */
+  height: 420px; /* RUI豁免: 同上 */
+  opacity: 0.26;
+}
+
+/* ---- 标题 · 隶书 --display-error，-0.06em 收紧 ---- */
+.error-page h1 {
+  max-width: 820px; /* RUI豁免: 820px 标题量度，接近 --measure-wide */
+  margin: 0;
+  font-size: var(--display-error);
+  line-height: var(--leading-tight);
+  letter-spacing: -0.06em;
+}
+
+.error-page > p:not(.eyebrow) {
+  max-width: 560px; /* RUI豁免: 560px 导语量度，非固定间距 */
+  margin: var(--space-8) 0 0;
+  color: var(--text-secondary);
+  font: 18px/1.8 var(--font-body); /* RUI豁免: 18px 对应 --text-lg，1.8 行高叙事 */
+}
+
+.error-page__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-10);
+  margin-top: var(--space-6);
+}
+
+/* ---- 关于页 · 长文以 --measure 约束，顶部以 --space-6 分隔 ---- */
+.about-page { padding-bottom: var(--space-10); }
+
+.about-page__content {
+  max-width: var(--measure);
+  padding-top: var(--space-8);
+}
+
+@media (max-width: 720px) {
+  .error-page { min-height: 0; padding: var(--space-6) 0 var(--space-5); }
+
+  .error-page .ripple-art { display: none; }
+
+  .error-page h1 { font-size: clamp(28px, 9vw, 38px); line-height: var(--leading-tight); }
+
+  .error-page > p:not(.eyebrow) { margin-top: var(--space-3); font-size: var(--text-sm); line-height: var(--leading-normal); }
+
+  .error-page__links { gap: var(--space-3); margin-top: var(--space-4); }
+
+  .about-page { padding-bottom: var(--space-5); }
+
+  .about-page__content { padding-top: var(--space-4); }
+}

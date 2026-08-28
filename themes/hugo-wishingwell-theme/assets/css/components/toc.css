@@ -1,0 +1,274 @@
+/* ==========================================================================
+   TOC · 组件 / 文章目录与弹层
+   --------------------------------------------------------------------------
+   使命：桌面端 sticky 右栏目录，移动端以 FAB 触发底部弹层；仅在双栏中
+   显现，不影响正文流式量度。
+   禁令：禁止直引 --wp-* 原语与 color·mix；禁止硬编码色值；触控尺寸以
+   --tap-min 保证，装饰指示线 8×1/3×18 为图示豁免。
+   关联：见 DESIGN.md §7 “TOC” 与 §7.1 移动端 FAB/弹层；高亮由 JS 驱动
+   is-active，样式回响 post-list 的指示针语汇。
+   ========================================================================== */
+
+/* ---- 桌面目录 · sticky 于右栏，顶部预留 --header-h + 20 ---- */
+.toc {
+  grid-column: 2;
+  grid-row: 1;
+  position: sticky;
+  top: calc(var(--header-h) + var(--space-5));
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+.toc details {
+  border-top: var(--border-width-thick) solid var(--border-strong);
+  padding-top: var(--space-4);
+}
+
+.toc summary {
+  color: var(--text-primary);
+  font: var(--text-sm) var(--font-functional);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.toc ul {
+  padding-left: 0;
+  list-style: none;
+}
+
+.toc ul ul { padding-left: var(--space-4); }
+
+.toc li { margin: var(--space-2) 0; }
+
+/* ---- 链接 · 左侧 8×1 accent 短线，hover 时下划线与颜色回响 ---- */
+.toc a {
+  position: relative;
+  display: inline-block;
+  padding-left: 14px; /* RUI豁免: 14px 文本缩进，贴合 8px 指示线光学对齐 */
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.toc a::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 8px; /* RUI豁免: 8px 指示线，非间距 */
+  height: 1px;
+  background: var(--accent);
+  transform: translateY(-50%) scaleX(0);
+  transform-origin: left;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+.toc a:hover,
+.toc a:focus-visible {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px; /* RUI豁免: 3px 下划线偏移，非间距 */
+}
+
+.toc a.is-active {
+  color: var(--accent);
+}
+
+.toc a.is-active::before { transform: translateY(-50%) scaleX(1); }
+
+/* ---- 悬浮按钮与弹层 · 默认隐藏，移动端由 JS 驱动 ---- */
+.toc-fab,
+.toc-backdrop,
+.toc-sheet { display: none; }
+
+/* ---- 悬浮按钮 · 固定右下，FAB 形态，低端机退化为实色 ---- */
+.toc-fab {
+  position: fixed;
+  right: calc(16px + env(safe-area-inset-right, 0px)); /* RUI豁免: 16px 视口边距，非间距 */
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px)); /* RUI豁免: 同上 */
+  z-index: var(--z-backtotop);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  height: auto;
+  padding: var(--space-2);
+  border: 1px solid var(--border-control);
+  border-radius: 0;
+  background: var(--overlay-fab);
+  -webkit-backdrop-filter: blur(10px) saturate(1.15);
+  backdrop-filter: blur(10px) saturate(1.15);
+  box-shadow: var(--shadow-2);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.toc-fab__icon { display: none; }
+
+.toc-fab span { display: block; font: var(--text-xs)/1 var(--font-functional); letter-spacing: 0.08em; }
+
+.toc-fab:focus-visible { border-color: var(--accent); color: var(--accent); box-shadow: var(--shadow-3); }
+
+.toc-fab[aria-expanded="true"] { border-color: var(--accent); background: var(--accent-wash); color: var(--accent-strong); }
+
+/* ---- 遮罩 · 实色半透，无模糊，轻量 ---- */
+.toc-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-backtotop) + 1);
+  border: 0;
+  padding: 0;
+  background: var(--overlay-scrim);
+}
+
+.toc-backdrop[hidden] { display: none !important; }
+
+/* ---- 弹层 · 底部弹出，最大 68dvh/560px，方形克制 ---- */
+.toc-sheet {
+  position: fixed;
+  inset: auto 0 0;
+  z-index: calc(var(--z-backtotop) + 2);
+  max-height: min(68dvh, 560px); /* RUI豁免: 560px 弹层上限，非间距 */
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  border-top: 1px solid var(--border-default);
+  border-radius: 0;
+  box-shadow: var(--shadow-4);
+  overflow: hidden;
+  overscroll-behavior: contain;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@supports not (height: 100dvh) {
+  .toc-sheet { max-height: min(68vh, 560px); }
+}
+
+.toc-sheet[hidden] { display: none !important; }
+
+.toc-sheet__header {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4) var(--space-3);
+  border-bottom: var(--border-width) solid var(--border-default);
+  background: var(--paper);
+  flex: none;
+}
+
+.toc-sheet__title {
+  padding-left: var(--space-3);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* ---- 关闭按钮 · 44×44 方形，满足 --tap-min 触控 ---- */
+.toc-sheet__close {
+  display: grid;
+  place-items: center;
+  width: var(--tap-min);
+  height: var(--tap-min);
+  min-width: var(--tap-min);
+  min-height: var(--tap-min);
+  border: var(--border-width) solid var(--border-default);
+  border-radius: 0;
+  background: var(--surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+}
+
+.toc-sheet__close:hover,
+.toc-sheet__close:focus-visible { border-color: var(--accent); color: var(--accent); background: var(--accent-wash); }
+
+.toc-sheet__close svg { width: 14px; height: 14px; } /* RUI豁免: 14px 关闭图标，非间距 */
+
+.toc-sheet__body {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+.toc-sheet__body ul { margin: 0; padding: 0; list-style: none; }
+
+.toc-sheet__body ul ul { padding-left: var(--space-4); border-left: var(--border-width) solid var(--border-default); margin-left: var(--space-2); }
+
+.toc-sheet__body li { margin: var(--space-1) 0; }
+
+/* ---- 弹层链接 · 左侧 3×18 竖线，激活时 scaleY(1) ---- */
+.toc-sheet__body a {
+  display: flex;
+  align-items: center;
+  min-height: var(--tap-min);
+  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  position: relative;
+  transition: color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+}
+
+.toc-sheet__body a::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 3px; /* RUI豁免: 3px 竖线装饰，非间距 */
+  height: 18px; /* RUI豁免: 18px 同上 */
+  background: var(--accent);
+  border-radius: 999px;
+  transform: translateY(-50%) scaleY(0);
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+.toc-sheet__body a:hover,
+.toc-sheet__body a:focus-visible { color: var(--text-primary); background: var(--surface-lift); }
+
+.toc-sheet__body a.is-active { color: var(--accent); background: var(--accent-wash); }
+
+.toc-sheet__body a.is-active::before { transform: translateY(-50%) scaleY(1); }
+
+/* ---- 响应式切换 · 桌面隐藏 FAB/弹层，900px 下启用 JS 切换 ---- */
+@media (min-width: 901px) {
+  .toc-fab,
+  .toc-backdrop,
+  .toc-sheet { display: none !important; }
+}
+
+@media (max-width: 900px) {
+  .js .toc--desktop { display: none; }
+
+  .js .toc-fab { display: inline-flex; }
+
+  .js .toc-backdrop[hidden],
+  .js .toc-sheet[hidden] { display: none; }
+
+  .js .toc-backdrop:not([hidden]) { display: block; }
+
+  .js .toc-sheet:not([hidden]) { display: flex; }
+}
+
+@media (max-width: 720px) {
+  .toc-fab {
+    background: var(--paper);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: var(--shadow-1);
+    border-radius: 0;
+  }
+
+  .toc-sheet { box-shadow: none; border-radius: 0; border-top-width: var(--border-width); }
+
+  .toc-sheet__header { padding: var(--space-2) var(--space-3); }
+
+  .toc-sheet__body a { padding: var(--space-2) var(--space-3); font-size: var(--text-sm); }
+}

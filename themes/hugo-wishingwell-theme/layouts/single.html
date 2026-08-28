@@ -1,0 +1,95 @@
+{{/* ==========================================================================
+   single.html · layouts / 文章页
+   --------------------------------------------------------------------------
+   渲染单篇正文、目录与相关文章；前置 validate-post 强校验发布条件，
+   失败即中断构建。非列表页不创建 paginator，禁止分页逻辑侵入。
+   关联：docs/COMMENTS.md §5、layouts/_partials/validate-post.html、
+   docs/DESIGN.md §7
+   ========================================================================== */}}
+{{ define "main" }}
+  <article class="page-shell article">
+    {{ partial "validate-post.html" . }}
+    <header class="article-header">
+      {{ with index (.GetTerms "topics") 0 }}<a class="topic" href="{{ .RelPermalink }}">{{ .LinkTitle }}</a>{{ end }}
+      <h1>{{ .Title }}</h1>
+      {{ with .Description }}<p class="article-deck">{{ . }}</p>{{ end }}
+      <div class="article-meta">
+        <span>发布于 <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "2006年1月2日" }}</time></span>
+        {{ if ne (.Lastmod.Format "2006-01-02") (.Date.Format "2006-01-02") }}
+          <span>更新于 <time datetime="{{ .Lastmod.Format "2006-01-02" }}">{{ .Lastmod.Format "2006年1月2日" }}</time></span>
+        {{ end }}
+        <span>{{ .ReadingTime }} 分钟阅读</span>
+      </div>
+    </header>
+
+    <hr class="article-divider">
+
+    {{ $showToc := and (ne .Params.toc false) (gt (len .Fragments.Identifiers) 0) }}
+    <div class="article-layout">
+      {{ if $showToc }}
+        <aside class="toc toc--desktop" aria-label="文章目录">
+          <details open>
+            <summary>目录</summary>
+            {{ .TableOfContents }}
+          </details>
+        </aside>
+      {{ end }}
+      <div class="article-content prose{{ if .Params.dropCap }} prose--drop-cap{{ end }}">
+        {{ .Content }}
+      </div>
+    </div>
+    {{ if $showToc }}
+      <button class="toc-fab" type="button" aria-expanded="false" aria-controls="toc-sheet" aria-label="打开目录">
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" class="toc-fab__icon"><path d="M3 5h10M3 8h10M3 11h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="3" cy="5" r="1" fill="currentColor"/><circle cx="3" cy="8" r="1" fill="currentColor"/><circle cx="3" cy="11" r="1" fill="currentColor"/></svg>
+        <span>目录</span>
+      </button>
+      <button class="toc-backdrop" type="button" aria-label="关闭目录" hidden></button>
+      <nav class="toc-sheet" id="toc-sheet" aria-label="文章目录" role="dialog" aria-modal="true" hidden>
+        <div class="toc-sheet__header">
+          <span class="toc-sheet__title">目录</span>
+          <button class="toc-sheet__close" type="button" aria-label="关闭目录">
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 4 12 12M12 4 4 12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <div class="toc-sheet__body">
+          {{ $tocMobile := replaceRE `id="TableOfContents"` `id="TableOfContents-mobile"` .TableOfContents }}
+          {{ $tocMobile | safeHTML }}{{/* 豁免：来源为 Hugo 内部 .TableOfContents 生成，非用户 HTML，已受 markup.goldmark.renderer.unsafe=false 约束 */}}
+        </div>
+      </nav>
+    {{ end }}
+
+    <footer class="article-footer">
+      {{ with .GetTerms "tags" }}
+        <div class="article-tags" aria-label="文章标签">
+          {{ range . }}<a href="{{ .RelPermalink }}"># {{ .LinkTitle }}</a>{{ end }}
+        </div>
+      {{ end }}
+
+      {{ if ne .Params.related false }}
+        {{ $posts := where site.RegularPages "Section" "posts" }}
+        {{ $related := $posts.Related . | first 3 }}
+        {{ if lt (len $related) 3 }}
+          {{ $fallback := $posts.ByDate.Reverse | complement (union (slice .) $related) }}
+          {{ $related = union $related $fallback | first 3 }}
+        {{ end }}
+        {{ with $related }}
+          <section class="related" aria-labelledby="related-title">
+            <div class="section-label"><h2 id="related-title">相关文章</h2></div>
+            {{ range . }}
+              <a class="related-item" href="{{ .RelPermalink }}">
+                <span>{{ .Title }}</span>
+                <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "2006年1月2日" }}</time>
+              </a>
+            {{ end }}
+          </section>
+        {{ end }}
+      {{ end }}
+    </footer>
+
+    <button class="back-to-top" type="button" data-back-to-top aria-label="返回顶部">
+      <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M8 14V2M8 2 3 7m5-5 5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </article>
+{{ end }}

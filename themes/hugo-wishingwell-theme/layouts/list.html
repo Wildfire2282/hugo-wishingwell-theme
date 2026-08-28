@@ -1,0 +1,33 @@
+{{/* ==========================================================================
+   list.html · layouts / 列表页（section）
+   --------------------------------------------------------------------------
+   展示 section 下递归页面；分页由 paginator.html 单一入口熔断，
+   head 先于 main 已创建，此处仅复用 .Paginator 避免二次 Paginate。
+   空集合不渲染分页。
+   关联：docs/COMMENTS.md §5、layouts/_partials/paginator.html、
+   layouts/_partials/pagination.html
+   ========================================================================== */}}
+{{ define "main" }}
+  {{ $pages := .RegularPagesRecursive }}
+  {{/* 分页熔断：head 先于 main 渲染，此处创建 paginator；list／term 复用 .Paginator 避免二次 Paginate */}}
+  {{ $paginator := partial "paginator.html" . }}
+  <div class="page-shell listing-page">
+    <header class="page-header">
+      {{ partial "ripple.html" (dict "variant" "list") }}
+      <p class="eyebrow">INDEX</p>
+      <h1>{{ .Title }}</h1>
+      {{ with .Content }}<div class="page-intro">{{ . }}</div>{{ end }}
+      <p class="page-count">{{ len $pages }} 篇记录</p>
+    </header>
+    <div class="post-list">
+      {{ if $pages }}
+        {{ range $paginator.Pages }}
+          {{ partial "post-row.html" (dict "page" . "headingLevel" 2) }}
+        {{ end }}
+      {{ else }}
+        <p class="empty-state">这里还没有记录。</p>
+      {{ end }}
+    </div>
+    {{ partial "pagination.html" . }}
+  </div>
+{{ end }}

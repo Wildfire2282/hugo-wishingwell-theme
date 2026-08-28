@@ -1,0 +1,52 @@
+{{/* ==========================================================================
+   validate-post.html · _partials / 文章前置校验
+   --------------------------------------------------------------------------
+   强校验发布前置条件，失败即 errorf 中断构建；去重仅 warn 以避免
+   历史数据阻断。所有检查面向发布契约，非排版细节。
+   关联：docs/COMMENTS.md §5、archetypes/posts.md、hugo.toml:permalinks
+   ========================================================================== */}}
+{{/* 恰 1 topic：front-matter 必须精确解析为一个 topics 术语，否则归类与相关推荐失效 */}}
+{{ $topics := .GetTerms "topics" }}
+{{ if ne (len $topics) 1 }}
+  {{ errorf "Post %q must resolve exactly one topic (found %d) — check frontmatter topics and content/topics/<name>/_index.md" .Path (len $topics) }}
+{{ end }}
+{{/* 恰 1 topic：二次校验 topics 参数在站点的真实存在性，避免幽灵分类 */}}
+{{ range .Params.topics }}
+  {{ $found := false }}
+  {{ with site.GetPage (printf "/topics/%s" .) }}{{ $found = true }}{{ end }}
+  {{ if not $found }}
+    {{ with site.GetPage (printf "/topics/%s" (urlize .)) }}{{ $found = true }}{{ end }}
+  {{ end }}
+  {{ if not $found }}
+    {{ if not (index site.Taxonomies.topics (urlize .)) }}
+      {{ errorf "Post %q topic %q not found in site.Taxonomies.topics — ensure content/topics/%q/_index.md exists" $.Path . . }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+{{/* 非空 description：列表与 SEO 必需，空则摘要回退不一致 */}}
+{{ if not .Description }}
+  {{ errorf "Post %q must define a description" .Path }}
+{{ end }}
+{{/* ASCII slug：空 slug 常见于 leaf-bundle 陷阱（.File.ContentBaseName 误用） */}}
+{{ if not .Slug }}
+  {{ errorf "Post %q has empty slug — check archetype uses .Name not .File.ContentBaseName (leaf-bundle trap: index.md -> slug 'index')" .Path }}
+{{ end }}
+{{/* ASCII slug：仅允许小写字母、数字与连字符，permalink 依赖 */}}
+{{ if not (findRE `^[a-z0-9]+(-[a-z0-9]+)*$` .Slug) }}
+  {{ errorf "Post %q must define a lowercase ASCII slug %q (a-z, 0-9, hyphen)" .Path .Slug }}
+{{ end }}
+{{/* ASCII slug：重复 slug 仅 warn，避免历史数据阻断构建；如需强校验可改 errorf */}}
+{{ $slug := .Slug }}
+{{ $dupCount := 0 }}
+{{ range where site.RegularPages "Section" "posts" }}
+  {{ if eq .Slug $slug }}{{ $dupCount = add $dupCount 1 }}{{ end }}
+{{ end }}
+{{ if gt $dupCount 1 }}
+  {{ warnf "Post %q slug %q is duplicated (%d pages share it) — slugs must be unique" .Path $slug $dupCount }}
+{{ end }}
+{{/* ASCII heading ID：标题锚点必须为 ASCII，避免中文 ID 导致链接与目录失效 */}}
+{{ range .Fragments.Identifiers }}
+  {{ if not (findRE `^[A-Za-z0-9][A-Za-z0-9_-]*$` .) }}
+    {{ errorf "Post %q contains a non-ASCII heading ID %q" $.Path . }}
+  {{ end }}
+{{ end }}

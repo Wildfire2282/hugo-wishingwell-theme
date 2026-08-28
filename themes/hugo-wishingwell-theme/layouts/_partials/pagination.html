@@ -1,0 +1,36 @@
+{{/* ==========================================================================
+   pagination.html · _partials / 分页导航
+   --------------------------------------------------------------------------
+   仅当已创建的 Paginator 且 TotalPages＞1 时渲染；禁止在此自行
+   Paginate。由 paginator.html 单一入口创建，head 先于 main 熔断。
+   关联：docs/COMMENTS.md §5、layouts/_partials/paginator.html
+   ========================================================================== */}}
+{{/* 分页熔断：依赖上游已创建的 Paginator，禁止二次 Paginate；head 已创建则直接复用 */}}
+{{- with .Paginator -}}
+  {{- $pag := . -}}
+  {{- if gt $pag.TotalPages 1 -}}
+    <nav class="pagination" aria-label="分页">
+      {{- with $pag.Prev }}
+        <a class="pagination__link" href="{{ .URL | absURL }}" rel="prev">← 上一页</a>
+      {{- else }}
+        <span class="pagination__link is-disabled" aria-disabled="true">← 上一页</span>
+      {{- end }}
+      <ul class="pagination__pages">
+        {{- range $pag.Pagers }}
+          <li>
+            {{- if eq .PageNumber $pag.PageNumber }}
+              <span class="pagination__number is-current" aria-current="page">{{ .PageNumber }}</span>
+            {{- else }}
+              <a class="pagination__number" href="{{ .URL | absURL }}">{{ .PageNumber }}</a>
+            {{- end }}
+          </li>
+        {{- end }}
+      </ul>
+      {{- with $pag.Next }}
+        <a class="pagination__link" href="{{ .URL | absURL }}" rel="next">下一页 →</a>
+      {{- else }}
+        <span class="pagination__link is-disabled" aria-disabled="true">下一页 →</span>
+      {{- end }}
+    </nav>
+  {{- end -}}
+{{- end -}}
