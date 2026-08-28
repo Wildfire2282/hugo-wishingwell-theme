@@ -2,6 +2,8 @@
 
 [![Hugo ≥0.164](https://img.shields.io/badge/Hugo-%3E%3D0.164-315c7c)](https://gohugo.io) [![License MIT](https://img.shields.io/badge/License-MIT-8a8e91)](LICENSE)
 
+**Demo / 演示站**：https://wildfire2282.github.io/hugo-wishingwell-theme/
+
 WishingWell — restrained Hugo theme for Chinese technical writing. / 面向中文技术写作的克制型 Hugo 主题。
 
 ## Requirements / 环境要求
