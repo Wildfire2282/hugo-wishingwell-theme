@@ -4,8 +4,6 @@
 
 **演示站点**：https://wildfire2282.github.io/hugo-wishingwell-theme/
 
-本项目采用单仓双形态架构，根目录即为可部署站点，`themes/hugo-wishingwell-theme` 可作为独立主题集成至任意 Hugo 站点。无第三方前端依赖，样式与脚本经由 Hugo Pipes 完成合并、压缩与指纹化处理。
-
 ---
 
 ## 快速开始
