@@ -4,7 +4,7 @@
 
 **演示站**：https://wildfire2282.github.io/hugo-wishingwell-theme/
 
-面向中文技术写作的克制型 Hugo 主题。
+一口为文字而设的许愿井——投下念头，听它回响。
 
 ## 环境要求
 
